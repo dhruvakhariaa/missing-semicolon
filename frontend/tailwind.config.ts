@@ -8,6 +8,16 @@ const config: Config = {
     ],
     theme: {
         extend: {
+            fontFamily: {
+                sans: ['var(--font-inter)', 'sans-serif'],
+                heading: ['var(--font-dm-sans)', 'sans-serif'],
+                'body': ['Inter', 'system-ui', 'sans-serif'],
+            },
+            backgroundImage: {
+                "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+                "gradient-conic":
+                    "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+            },
             colors: {
                 // Jan Sewa Portal Color Palette (Light to Dark)
                 brand: {
@@ -21,10 +31,6 @@ const config: Config = {
                     700: '#031F36',
                     800: '#000103',  // Darkest
                 },
-            },
-            fontFamily: {
-                'heading': ['DM Sans', 'system-ui', 'sans-serif'],
-                'body': ['Inter', 'system-ui', 'sans-serif'],
             },
             animation: {
                 'fade-in': 'fadeIn 0.5s ease-out forwards',
