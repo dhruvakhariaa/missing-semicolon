@@ -1,60 +1,73 @@
-# Frontend - React with Next.js
+# React + TypeScript + Vite
 
-## Purpose
-User interface layer providing:
-- Citizen Portal: For end users accessing services
-- Admin Dashboard: For government officials monitoring system
-- Service Provider Interface: For healthcare providers, agriculture experts
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Technology Stack
-- **Framework**: React with Next.js for SEO and SSR
-- **Styling**: Tailwind CSS
-- **Components**: shadcn/ui component library
-- **State Management**: React Context API or Zustand
-- **Internationalization**: i18next (English, Hindi, Gujarati)
-- **Charts**: Recharts or Chart.js
+Currently, two official plugins are available:
 
-## Characteristics
-- Responsive design for mobile and desktop
-- Progressive Web App (PWA) capabilities
-- Multi-language support
-- Accessibility compliant (WCAG 2.1)
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Structure
-```
-frontend/
-├── public/                 # Static assets
-│   ├── icons/
-│   ├── images/
-│   └── locales/           # i18n translation files
-├── src/
-│   ├── app/               # Next.js App Router pages
-│   │   ├── (auth)/        # Auth pages (login, register)
-│   │   ├── (citizen)/     # Citizen portal pages
-│   │   ├── (admin)/       # Admin dashboard pages
-│   │   └── (provider)/    # Service provider pages
-│   ├── components/        # Reusable UI components
-│   │   ├── ui/            # shadcn/ui components
-│   │   ├── common/        # Shared components (Header, Footer, etc.)
-│   │   ├── forms/         # Form components
-│   │   ├── healthcare/    # Healthcare-specific components
-│   │   ├── agriculture/   # Agriculture-specific components
-│   │   ├── urban/         # Urban-specific components
-│   │   └── dashboard/     # Dashboard/monitoring components
-│   ├── hooks/             # Custom React hooks
-│   ├── lib/               # Utility libraries
-│   ├── services/          # API service layer
-│   ├── store/             # State management (Zustand/Context)
-│   ├── styles/            # Global styles and Tailwind config
-│   └── types/             # TypeScript type definitions
-├── Dockerfile
-└── package.json
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-## Key Interfaces
-1. Landing Page - Service discovery
-2. Citizen Dashboard - Unified view
-3. Healthcare Appointment Booking
-4. Agriculture Advisory Portal
-5. Urban Complaint Management
-6. Admin Monitoring Dashboard
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
