@@ -311,9 +311,13 @@ const cancelAppointment = async (req, res, next) => {
             });
         }
 
-        // Check authorization
+        // Check authorization - allow demo mode
         const patient = await Patient.findById(appointment.patient);
-        if (patient.userId !== req.user.id && req.user.role !== 'admin') {
+        const isDemoPatient = patient?.email === 'demo@healthcare.gov.in';
+        const isOwner = req.user && patient?.userId === req.user.id;
+        const isAdmin = req.user && req.user.role === 'admin';
+
+        if (!isDemoPatient && !isOwner && !isAdmin) {
             return sendResponse(res, 403, false, null, null, {
                 code: 'FORBIDDEN',
                 message: 'You can only cancel your own appointments'
@@ -338,14 +342,14 @@ const cancelAppointment = async (req, res, next) => {
         const dateStr = appointment.appointmentDate.toISOString().split('T')[0];
         await deleteCache(`slots:${appointment.doctor}:${dateStr}`);
 
-        // Publish event
-        await publishEvent('appointment.cancelled', {
+        // Publish event (non-blocking)
+        publishEvent('appointment.cancelled', {
             appointmentId: appointment._id,
             appointmentNumber: appointment.appointmentNumber,
-            patientId: patient._id,
+            patientId: patient?._id,
             doctorId: appointment.doctor,
             reason: appointment.cancellationReason
-        });
+        }).catch(err => logger.warn('Failed to publish event', err));
 
         logger.info(`Appointment cancelled: ${appointment.appointmentNumber}`);
 

@@ -1,29 +1,90 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, Video, Phone, User, Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Calendar, Clock, MapPin, Video, Phone, User, Plus, X, AlertTriangle } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import type { Appointment } from '../types';
 import { getMyAppointments } from '../api';
+import api from '../api';
 
 const Appointments: React.FC = () => {
+    const navigate = useNavigate();
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
 
+    // Modal states
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+    const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+    const [cancelReason, setCancelReason] = useState('');
+    const [actionLoading, setActionLoading] = useState(false);
+
+    const fetchAppointments = async () => {
+        try {
+            const res = await getMyAppointments();
+            setAppointments(res.data.data || res.data || []);
+        } catch (err) {
+            console.error("Failed to fetch appointments", err);
+            setAppointments([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchAppointments = async () => {
-            try {
-                const res = await getMyAppointments();
-                setAppointments(res.data.data || res.data || []);
-            } catch (err) {
-                console.error("Failed to fetch appointments", err);
-                // Set empty array on error to avoid crashes
-                setAppointments([]);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchAppointments();
     }, []);
+
+    const handleCancelClick = (apt: Appointment) => {
+        setSelectedAppointment(apt);
+        setShowCancelModal(true);
+        setCancelReason('');
+    };
+
+    const handleRescheduleClick = (apt: Appointment) => {
+        setSelectedAppointment(apt);
+        setShowRescheduleModal(true);
+    };
+
+    const confirmCancel = async () => {
+        if (!selectedAppointment) return;
+
+        setActionLoading(true);
+        try {
+            await api.delete(`/appointments/${selectedAppointment._id}`, {
+                data: { reason: cancelReason || 'Cancelled by patient' }
+            });
+            // Refresh appointments
+            await fetchAppointments();
+            setShowCancelModal(false);
+            setSelectedAppointment(null);
+        } catch (err) {
+            console.error("Failed to cancel appointment", err);
+            alert('Failed to cancel appointment. Please try again.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const confirmReschedule = async () => {
+        if (!selectedAppointment) return;
+
+        setActionLoading(true);
+        try {
+            // Cancel the old appointment first
+            await api.delete(`/appointments/${selectedAppointment._id}`, {
+                data: { reason: 'Rescheduled to a new time' }
+            });
+            // Navigate to doctor profile to book a new slot
+            navigate(`/doctors/${selectedAppointment.doctor?._id || selectedAppointment.doctor}`);
+        } catch (err) {
+            console.error("Failed to cancel old appointment", err);
+            // Still navigate even if cancel fails
+            navigate(`/doctors/${selectedAppointment.doctor?._id || selectedAppointment.doctor}`);
+        } finally {
+            setActionLoading(false);
+            setShowRescheduleModal(false);
+        }
+    };
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -123,7 +184,7 @@ const Appointments: React.FC = () => {
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <Clock className="h-4 w-4 text-orange-500" />
-                                        <span>{apt.timeSlot?.start || 'Time TBD'}</span>
+                                        <span>{apt.timeSlot?.startTime || apt.timeSlot?.start || 'Time TBD'}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <MapPin className="h-4 w-4 text-gray-400" />
@@ -141,10 +202,16 @@ const Appointments: React.FC = () => {
                             <div className="flex items-center gap-3 pt-2 md:pt-0">
                                 {['scheduled', 'confirmed'].includes(apt.status) ? (
                                     <>
-                                        <button className="px-4 py-2 border border-gov-blue-600 text-gov-blue-600 rounded-lg font-medium hover:bg-gov-blue-50 text-sm">
+                                        <button
+                                            onClick={() => handleRescheduleClick(apt)}
+                                            className="px-4 py-2 border border-gov-blue-600 text-gov-blue-600 rounded-lg font-medium hover:bg-gov-blue-50 text-sm transition-colors"
+                                        >
                                             Reschedule
                                         </button>
-                                        <button className="px-4 py-2 border border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50 text-sm">
+                                        <button
+                                            onClick={() => handleCancelClick(apt)}
+                                            className="px-4 py-2 border border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50 text-sm transition-colors"
+                                        >
                                             Cancel
                                         </button>
                                     </>
@@ -168,6 +235,85 @@ const Appointments: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {/* Cancel Modal */}
+            {showCancelModal && selectedAppointment && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+                        <div className="flex items-center gap-3 text-red-600 mb-4">
+                            <AlertTriangle className="h-6 w-6" />
+                            <h3 className="text-xl font-bold">Cancel Appointment</h3>
+                        </div>
+                        <p className="text-gray-600 mb-4">
+                            Are you sure you want to cancel your appointment with <strong>{selectedAppointment.doctor?.name}</strong> on{' '}
+                            <strong>{new Date(selectedAppointment.appointmentDate).toLocaleDateString()}</strong>?
+                        </p>
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Reason for cancellation (optional)</label>
+                            <textarea
+                                value={cancelReason}
+                                onChange={(e) => setCancelReason(e.target.value)}
+                                placeholder="Please provide a reason..."
+                                className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none resize-none h-20"
+                            />
+                        </div>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setShowCancelModal(false)}
+                                className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+                            >
+                                Keep Appointment
+                            </button>
+                            <button
+                                onClick={confirmCancel}
+                                disabled={actionLoading}
+                                className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
+                            >
+                                {actionLoading ? 'Cancelling...' : 'Cancel Appointment'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Reschedule Modal */}
+            {showRescheduleModal && selectedAppointment && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-xl font-bold text-gov-blue-700">Reschedule Appointment</h3>
+                            <button onClick={() => setShowRescheduleModal(false)} className="text-gray-400 hover:text-gray-600">
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+                        <p className="text-gray-600 mb-6">
+                            To reschedule your appointment with <strong>{selectedAppointment.doctor?.name}</strong>,
+                            you'll be redirected to book a new time slot. Your current appointment will remain active until you book a new one.
+                        </p>
+                        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                            <p className="text-sm text-gray-500">Current Appointment</p>
+                            <p className="font-medium text-gov-blue-700">
+                                {new Date(selectedAppointment.appointmentDate).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+                                {' at '}{selectedAppointment.timeSlot?.startTime || selectedAppointment.timeSlot?.start || 'TBD'}
+                            </p>
+                        </div>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setShowRescheduleModal(false)}
+                                className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmReschedule}
+                                className="px-6 py-2 bg-gov-blue-600 text-white rounded-lg font-medium hover:bg-gov-blue-700 transition-colors"
+                            >
+                                Choose New Time
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

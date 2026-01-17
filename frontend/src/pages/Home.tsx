@@ -40,14 +40,8 @@ const Home: React.FC = () => {
             {/* Quick Actions Navigation */}
             <div className="space-y-8 max-w-6xl mx-auto px-4">
                 <div className="flex flex-wrap items-center justify-start gap-8 border-b-2 border-gov-blue-100 pb-2">
-                    <Link to="/appointments" className="flex items-center gap-2 text-xl font-bold text-gov-blue-700 border-b-4 border-gov-blue-600 -mb-[10px] pb-2 hover:text-gov-black transition-colors">
-                        <Calendar className="h-5 w-5" /> Book an appointment
-                    </Link>
-                    <Link to="/doctors" className="flex items-center gap-2 text-lg font-medium text-gov-blue-500 hover:text-gov-blue-700 transition-colors pb-2">
-                        <Stethoscope className="h-5 w-5" /> Find doctors
-                    </Link>
-                    <Link to="/doctors?consult=video" className="flex items-center gap-2 text-lg font-medium text-gov-blue-500 hover:text-gov-blue-700 transition-colors pb-2">
-                        <Video className="h-5 w-5" /> Video consult
+                    <Link to="/" className="flex items-center gap-2 text-xl font-bold text-gov-blue-700 border-b-4 border-gov-blue-600 -mb-[10px] pb-2 hover:text-gov-black transition-colors">
+                        <Building2 className="h-5 w-5" /> All services
                     </Link>
                 </div>
 

@@ -1,40 +1,80 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Star, MapPin, Clock, Search, Filter, Stethoscope } from 'lucide-react';
-import type { Doctor } from '../types';
-import { getDoctors } from '../api';
+import { Star, MapPin, Clock, Search, Filter, Stethoscope, X } from 'lucide-react';
+import type { Doctor, Department } from '../types';
+import { getDoctors, getDepartments } from '../api';
 
 const Doctors: React.FC = () => {
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const deptFilter = searchParams.get('dept');
     const [searchTerm, setSearchTerm] = useState('');
     const [doctors, setDoctors] = useState<Doctor[]>([]);
+    const [departments, setDepartments] = useState<Department[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showFilters, setShowFilters] = useState(false);
+
+    // Filter states
+    const [selectedDept, setSelectedDept] = useState<string>(deptFilter || '');
+    const [experienceFilter, setExperienceFilter] = useState<string>('');
+    const [feeFilter, setFeeFilter] = useState<string>('');
+    const [ratingFilter, setRatingFilter] = useState<string>('');
 
     useEffect(() => {
-        const fetchDoctors = async () => {
+        const fetchData = async () => {
             try {
-                const params: Record<string, string> = {};
-                if (deptFilter) params.department = deptFilter;
-
-                const response = await getDoctors(params);
-                setDoctors(response.data.data || response.data);
+                const [doctorsRes, deptsRes] = await Promise.all([
+                    getDoctors({}),
+                    getDepartments()
+                ]);
+                setDoctors(doctorsRes.data.data || doctorsRes.data);
+                setDepartments(deptsRes.data.data || deptsRes.data);
             } catch (err) {
-                console.error("Failed to fetch doctors", err);
+                console.error("Failed to fetch data", err);
                 setError("Failed to load doctors.");
             } finally {
                 setLoading(false);
             }
         };
-        fetchDoctors();
-    }, [deptFilter]);
+        fetchData();
+    }, []);
+
+    const applyFilters = () => {
+        setShowFilters(false);
+    };
+
+    const clearFilters = () => {
+        setSelectedDept('');
+        setExperienceFilter('');
+        setFeeFilter('');
+        setRatingFilter('');
+        setSearchParams({});
+    };
 
     const filteredDoctors = doctors.filter(doc => {
         const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             doc.specialization.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesSearch;
+
+        const matchesDept = !selectedDept || doc.department?._id === selectedDept;
+
+        const matchesExperience = !experienceFilter ||
+            (experienceFilter === '0-5' && doc.experience <= 5) ||
+            (experienceFilter === '5-10' && doc.experience > 5 && doc.experience <= 10) ||
+            (experienceFilter === '10+' && doc.experience > 10);
+
+        const matchesFee = !feeFilter ||
+            (feeFilter === '0-500' && doc.consultationFee <= 500) ||
+            (feeFilter === '500-1000' && doc.consultationFee > 500 && doc.consultationFee <= 1000) ||
+            (feeFilter === '1000+' && doc.consultationFee > 1000);
+
+        const matchesRating = !ratingFilter ||
+            (ratingFilter === '4+' && (doc.rating || 0) >= 4) ||
+            (ratingFilter === '4.5+' && (doc.rating || 0) >= 4.5);
+
+        return matchesSearch && matchesDept && matchesExperience && matchesFee && matchesRating;
     });
+
+    const activeFiltersCount = [selectedDept, experienceFilter, feeFilter, ratingFilter].filter(Boolean).length;
 
     if (loading) return <div className="p-8 text-center text-gov-blue-600">Loading doctors...</div>;
     if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
@@ -60,12 +100,134 @@ const Doctors: React.FC = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <button className="flex items-center gap-2 px-4 py-3 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">
+                    <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className={`flex items-center gap-2 px-4 py-3 border rounded-lg transition-colors ${activeFiltersCount > 0
+                                ? 'border-gov-blue-500 bg-gov-blue-50 text-gov-blue-700'
+                                : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                            }`}
+                    >
                         <Filter className="h-5 w-5" />
                         <span>Filters</span>
+                        {activeFiltersCount > 0 && (
+                            <span className="bg-gov-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                {activeFiltersCount}
+                            </span>
+                        )}
                     </button>
                 </div>
+
+                {/* Filter Panel */}
+                {showFilters && (
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {/* Department Filter */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                                <select
+                                    value={selectedDept}
+                                    onChange={(e) => setSelectedDept(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gov-blue-500 outline-none"
+                                >
+                                    <option value="">All Departments</option>
+                                    {departments.map(dept => (
+                                        <option key={dept._id} value={dept._id}>{dept.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Experience Filter */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Experience</label>
+                                <select
+                                    value={experienceFilter}
+                                    onChange={(e) => setExperienceFilter(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gov-blue-500 outline-none"
+                                >
+                                    <option value="">Any Experience</option>
+                                    <option value="0-5">0-5 Years</option>
+                                    <option value="5-10">5-10 Years</option>
+                                    <option value="10+">10+ Years</option>
+                                </select>
+                            </div>
+
+                            {/* Fee Filter */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Consultation Fee</label>
+                                <select
+                                    value={feeFilter}
+                                    onChange={(e) => setFeeFilter(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gov-blue-500 outline-none"
+                                >
+                                    <option value="">Any Fee</option>
+                                    <option value="0-500">Under ₹500</option>
+                                    <option value="500-1000">₹500 - ₹1000</option>
+                                    <option value="1000+">Above ₹1000</option>
+                                </select>
+                            </div>
+
+                            {/* Rating Filter */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                                <select
+                                    value={ratingFilter}
+                                    onChange={(e) => setRatingFilter(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gov-blue-500 outline-none"
+                                >
+                                    <option value="">Any Rating</option>
+                                    <option value="4+">4+ Stars</option>
+                                    <option value="4.5+">4.5+ Stars</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3 mt-4">
+                            <button
+                                onClick={clearFilters}
+                                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                            >
+                                Clear All
+                            </button>
+                            <button
+                                onClick={applyFilters}
+                                className="px-6 py-2 bg-gov-blue-600 text-white rounded-lg hover:bg-gov-blue-700 transition-colors"
+                            >
+                                Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
+
+            {/* Active Filters */}
+            {activeFiltersCount > 0 && (
+                <div className="flex flex-wrap gap-2">
+                    {selectedDept && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-gov-blue-50 text-gov-blue-700 rounded-full text-sm">
+                            {departments.find(d => d._id === selectedDept)?.name}
+                            <button onClick={() => setSelectedDept('')} className="hover:text-gov-blue-900"><X className="h-4 w-4" /></button>
+                        </span>
+                    )}
+                    {experienceFilter && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-gov-blue-50 text-gov-blue-700 rounded-full text-sm">
+                            {experienceFilter} Years
+                            <button onClick={() => setExperienceFilter('')} className="hover:text-gov-blue-900"><X className="h-4 w-4" /></button>
+                        </span>
+                    )}
+                    {feeFilter && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-gov-blue-50 text-gov-blue-700 rounded-full text-sm">
+                            Fee: {feeFilter === '0-500' ? 'Under ₹500' : feeFilter === '500-1000' ? '₹500-₹1000' : 'Above ₹1000'}
+                            <button onClick={() => setFeeFilter('')} className="hover:text-gov-blue-900"><X className="h-4 w-4" /></button>
+                        </span>
+                    )}
+                    {ratingFilter && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-gov-blue-50 text-gov-blue-700 rounded-full text-sm">
+                            {ratingFilter} Stars
+                            <button onClick={() => setRatingFilter('')} className="hover:text-gov-blue-900"><X className="h-4 w-4" /></button>
+                        </span>
+                    )}
+                </div>
+            )}
 
             {/* Doctor List */}
             <div className="grid gap-6">
