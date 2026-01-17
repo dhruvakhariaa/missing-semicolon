@@ -1,0 +1,49 @@
+{
+  "name": "service-delivery-platform",
+  "version": "1.0.0",
+  "description": "National-Scale Digital Public Infrastructure for Seamless Service Delivery",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:gateway\" \"npm run dev:healthcare\" \"npm run dev:agriculture\" \"npm run dev:urban\" \"npm run dev:monitoring\" \"npm run dev:frontend\"",
+    "dev:gateway": "cd services/api-gateway && npm run dev",
+    "dev:healthcare": "cd services/healthcare && npm run dev",
+    "dev:agriculture": "cd services/agriculture && npm run dev",
+    "dev:urban": "cd services/urban && npm run dev",
+    "dev:monitoring": "cd services/monitoring && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "install:all": "npm install && npm run install:services && npm run install:frontend",
+    "install:services": "cd services/api-gateway && npm install && cd ../healthcare && npm install && cd ../agriculture && npm install && cd ../urban && npm install && cd ../monitoring && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:build": "docker-compose build",
+    "seed": "node scripts/seed-data.js"
+  },
+  "workspaces": [
+    "services/*",
+    "frontend",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "digital-infrastructure",
+    "microservices",
+    "government-services",
+    "healthcare",
+    "agriculture",
+    "urban",
+    "node.js",
+    "express",
+    "mongodb",
+    "redis",
+    "rabbitmq"
+  ],
+  "author": "Hackathon Team",
+  "license": "MIT"
+}
