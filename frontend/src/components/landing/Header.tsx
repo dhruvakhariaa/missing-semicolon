@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Menu, X, Globe } from 'lucide-react'
+import { Menu, X, Globe, User, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
+import { useAuth } from '@/context/AuthContext'
 
 const languages = [
     { code: 'en', name: 'English' },
@@ -22,6 +24,8 @@ export default function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [selectedLanguage, setSelectedLanguage] = useState('en')
     const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false)
+    const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
+    const { user, isAuthenticated, logout } = useAuth()
 
     useEffect(() => {
         const handleScroll = () => {
@@ -29,6 +33,19 @@ export default function Header() {
         }
         window.addEventListener('scroll', handleScroll)
         return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
+
+    // Close dropdowns when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            const target = e.target as HTMLElement
+            if (!target.closest('.user-dropdown') && !target.closest('.lang-dropdown')) {
+                setIsUserDropdownOpen(false)
+                setIsLangDropdownOpen(false)
+            }
+        }
+        document.addEventListener('click', handleClickOutside)
+        return () => document.removeEventListener('click', handleClickOutside)
     }, [])
 
     return (
@@ -71,9 +88,13 @@ export default function Header() {
                     {/* Right Side Actions */}
                     <div className="flex items-center gap-4">
                         {/* Language Selector */}
-                        <div className="relative">
+                        <div className="relative lang-dropdown">
                             <button
-                                onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    setIsLangDropdownOpen(!isLangDropdownOpen)
+                                    setIsUserDropdownOpen(false)
+                                }}
                                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-brand-600 
                          hover:bg-brand-100 transition-colors duration-200"
                                 aria-label="Select Language"
@@ -106,13 +127,65 @@ export default function Header() {
                             )}
                         </div>
 
-                        {/* Login Button */}
-                        <a
-                            href="/login"
-                            className="btn-primary text-sm hidden sm:inline-flex"
-                        >
-                            Login
-                        </a>
+                        {/* Auth Section */}
+                        {isAuthenticated ? (
+                            /* User Dropdown */
+                            <div className="relative user-dropdown hidden sm:block">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        setIsUserDropdownOpen(!isUserDropdownOpen)
+                                        setIsLangDropdownOpen(false)
+                                    }}
+                                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-100 text-brand-700 hover:bg-brand-200 transition-colors"
+                                >
+                                    <div className="w-8 h-8 bg-brand-500 rounded-full flex items-center justify-center text-white font-medium">
+                                        {user?.name?.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="font-medium max-w-[100px] truncate">{user?.name?.split(' ')[0]}</span>
+                                    <ChevronDown className={`w-4 h-4 transition-transform ${isUserDropdownOpen ? 'rotate-180' : ''}`} />
+                                </button>
+
+                                {isUserDropdownOpen && (
+                                    <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-brand-100 py-2 min-w-[200px] animate-fade-in">
+                                        {/* User Info */}
+                                        <div className="px-4 py-3 border-b border-brand-100">
+                                            <p className="font-medium text-brand-800">{user?.name}</p>
+                                            <p className="text-sm text-brand-500 truncate">{user?.email}</p>
+                                        </div>
+
+                                        {/* Menu Items */}
+                                        <Link
+                                            href="/dashboard"
+                                            className="flex items-center gap-3 px-4 py-2 text-brand-600 hover:bg-brand-50 transition-colors"
+                                            onClick={() => setIsUserDropdownOpen(false)}
+                                        >
+                                            <LayoutDashboard className="w-4 h-4" />
+                                            Dashboard
+                                        </Link>
+
+                                        <button
+                                            onClick={() => {
+                                                setIsUserDropdownOpen(false)
+                                                logout()
+                                            }}
+                                            className="flex items-center gap-3 w-full px-4 py-2 text-red-600 hover:bg-red-50 transition-colors"
+                                        >
+                                            <LogOut className="w-4 h-4" />
+                                            Logout
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            /* Login Button */
+                            <Link
+                                href="/login"
+                                className="btn-primary text-sm hidden sm:inline-flex"
+                            >
+                                Login
+                            </Link>
+                        )}
 
                         {/* Mobile Menu Button */}
                         <button
@@ -143,12 +216,37 @@ export default function Header() {
                                     {link.name}
                                 </a>
                             ))}
-                            <a
-                                href="/login"
-                                className="btn-primary mx-4 mt-2 text-center"
-                            >
-                                Login
-                            </a>
+
+                            {isAuthenticated ? (
+                                <>
+                                    <Link
+                                        href="/dashboard"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="px-4 py-3 rounded-lg text-brand-600 font-medium hover:bg-brand-100 transition-colors flex items-center gap-2"
+                                    >
+                                        <LayoutDashboard className="w-5 h-5" />
+                                        Dashboard
+                                    </Link>
+                                    <button
+                                        onClick={() => {
+                                            setIsMobileMenuOpen(false)
+                                            logout()
+                                        }}
+                                        className="mx-4 mt-2 btn-secondary text-center flex items-center justify-center gap-2"
+                                    >
+                                        <LogOut className="w-5 h-5" />
+                                        Logout
+                                    </button>
+                                </>
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="btn-primary mx-4 mt-2 text-center"
+                                >
+                                    Login
+                                </Link>
+                            )}
                         </div>
                     </div>
                 )}
