@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
-// Placeholder imports for pages
 import Home from './pages/Home';
 import Departments from './pages/Departments';
 import Doctors from './pages/Doctors';
@@ -8,6 +7,9 @@ import DoctorProfile from './pages/DoctorProfile';
 import Appointments from './pages/Appointments';
 import PatientProfile from './pages/PatientProfile';
 import BookingConfirmation from './pages/BookingConfirmation';
+import LabReports from './pages/LabReports';
+import BloodBank from './pages/BloodBank';
+import Emergency from './pages/Emergency';
 
 function App() {
   return (
@@ -21,6 +23,9 @@ function App() {
           <Route path="appointments" element={<Appointments />} />
           <Route path="profile" element={<PatientProfile />} />
           <Route path="booking-confirmation" element={<BookingConfirmation />} />
+          <Route path="lab-reports" element={<LabReports />} />
+          <Route path="blood-bank" element={<BloodBank />} />
+          <Route path="emergency" element={<Emergency />} />
         </Route>
       </Routes>
     </BrowserRouter>

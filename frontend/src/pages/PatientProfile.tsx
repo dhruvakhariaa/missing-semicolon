@@ -1,38 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import { User, Phone, Mail, Calendar, Droplet, MapPin, Heart, AlertTriangle, Edit2 } from 'lucide-react';
-import type { UserProfile } from '../types';
+import { User, Phone, Mail, MapPin, AlertCircle, Heart, Edit2, Save, X } from 'lucide-react';
+import type { Patient } from '../types';
 import { getPatientProfile } from '../api';
 
 const PatientProfile: React.FC = () => {
-    const [user, setUser] = useState<UserProfile | null>(null);
-    const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const [profile, setProfile] = useState<Patient>({
+        _id: '',
+        name: 'Guest User',
+        email: 'guest@example.com',
+        phone: '9876543210',
+        gender: 'Male',
+        dateOfBirth: '1990-01-01',
+        bloodGroup: 'O+',
+        address: {
+            street: '123 Main Street',
+            city: 'New Delhi',
+            state: 'Delhi',
+            pincode: '110001'
+        },
+        emergencyContact: {
+            name: 'Emergency Contact',
+            relationship: 'Family',
+            phone: '9876543211'
+        },
+        medicalHistory: {
+            allergies: [],
+            conditions: [],
+            medications: []
+        }
+    });
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                // In a real app, this would use the auth token
                 const res = await getPatientProfile();
-                setUser(res.data.data || res.data);
+                const data = res.data.data || res.data;
+                setProfile(data);
             } catch (err) {
                 console.error("Failed to fetch profile", err);
-                // Fallback to mock data for demonstration
-                setUser({
-                    name: 'Neel Shah',
-                    email: 'neel@example.com',
-                    phone: '+91 98765 43210',
-                    dob: '1998-01-15',
-                    gender: 'Male',
-                    bloodGroup: 'B+',
-                    address: '123, Green Park, Ahmedabad, Gujarat',
-                    emergencyContact: {
-                        name: 'Parent Name',
-                        relation: 'Father',
-                        phone: '+91 98765 43211'
-                    },
-                    allergies: ['Penicillin', 'Dust'],
-                    medicalConditions: []
-                });
+                // Keep default/mock profile on error (for demo purposes)
+                setError("Could not load profile from server. Showing demo data.");
             } finally {
                 setLoading(false);
             }
@@ -40,122 +51,197 @@ const PatientProfile: React.FC = () => {
         fetchProfile();
     }, []);
 
-    if (loading) return <div className="p-8 text-center">Loading profile...</div>;
-    if (!user) return <div className="p-8 text-center">Profile not found</div>;
+    const handleSave = () => {
+        // TODO: Implement API call to save profile
+        setIsEditing(false);
+    };
+
+    if (loading) return <div className="p-8 text-center text-gov-blue-600">Loading profile...</div>;
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-                <button
-                    onClick={() => setIsEditing(!isEditing)}
-                    className="flex items-center gap-2 text-blue-600 font-medium hover:bg-blue-50 px-4 py-2 rounded-lg transition-colors"
-                >
-                    <Edit2 className="h-4 w-4" /> {isEditing ? 'Save Changes' : 'Edit Profile'}
-                </button>
+                <h1 className="text-3xl font-bold text-gov-blue-700">My Health Profile</h1>
+                {!isEditing ? (
+                    <button
+                        onClick={() => setIsEditing(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-gov-blue-600 text-white rounded-lg font-medium hover:bg-gov-blue-700 transition-colors"
+                    >
+                        <Edit2 className="h-4 w-4" /> Edit Profile
+                    </button>
+                ) : (
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleSave}
+                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+                        >
+                            <Save className="h-4 w-4" /> Save
+                        </button>
+                        <button
+                            onClick={() => setIsEditing(false)}
+                            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                        >
+                            <X className="h-4 w-4" /> Cancel
+                        </button>
+                    </div>
+                )}
             </div>
 
-            <div className="grid gap-6">
-                {/* Personal Info Card */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-                    <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
-                        <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
-                            <User className="h-6 w-6" />
-                        </div>
-                        <h2 className="text-xl font-bold text-gray-800">Personal Information</h2>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-1">
-                            <label className="text-sm text-gray-500">Full Name</label>
-                            <div className="font-medium text-gray-900">{user.name}</div>
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-sm text-gray-500">Gender</label>
-                            <div className="font-medium text-gray-900">{user.gender}</div>
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-sm text-gray-500 flex items-center gap-1"><Mail className="h-3 w-3" /> Email</label>
-                            <div className="font-medium text-gray-900">{user.email}</div>
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-sm text-gray-500 flex items-center gap-1"><Phone className="h-3 w-3" /> Phone</label>
-                            <div className="font-medium text-gray-900">{user.phone}</div>
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-sm text-gray-500 flex items-center gap-1"><Calendar className="h-3 w-3" /> DOB</label>
-                            <div className="font-medium text-gray-900">{user.dob}</div>
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-sm text-gray-500 flex items-center gap-1"><Droplet className="h-3 w-3" /> Blood Group</label>
-                            <div className="font-bold text-red-600 bg-red-50 inline-block px-2 rounded">{user.bloodGroup}</div>
-                        </div>
-                        <div className="md:col-span-2 space-y-1">
-                            <label className="text-sm text-gray-500 flex items-center gap-1"><MapPin className="h-3 w-3" /> Address</label>
-                            <div className="font-medium text-gray-900">{user.address}</div>
-                        </div>
-                    </div>
+            {error && (
+                <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg text-sm">
+                    {error}
                 </div>
+            )}
 
-                {/* Medical Info Card */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-                    <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
-                        <div className="bg-red-100 p-2 rounded-lg text-red-600">
-                            <Heart className="h-6 w-6" />
-                        </div>
-                        <h2 className="text-xl font-bold text-gray-800">Medical History</h2>
+            {/* Personal Information */}
+            <div className="bg-white rounded-xl shadow-sm border border-gov-blue-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100 bg-gov-blue-50">
+                    <h2 className="text-lg font-bold text-gov-blue-700 flex items-center gap-2">
+                        <User className="h-5 w-5" /> Personal Information
+                    </h2>
+                </div>
+                <div className="p-6 grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">Full Name</label>
+                        {isEditing ? (
+                            <input
+                                type="text"
+                                value={profile.name}
+                                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gov-blue-500 outline-none"
+                            />
+                        ) : (
+                            <p className="text-gray-900 font-medium text-lg">{profile.name}</p>
+                        )}
                     </div>
-
-                    <div className="space-y-6">
-                        <div>
-                            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Allergies</h3>
-                            <div className="flex flex-wrap gap-2">
-                                {user.allergies?.map(allergy => (
-                                    <span key={allergy} className="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-sm font-medium border border-orange-100 flex items-center gap-1">
-                                        <AlertTriangle className="h-3 w-3" /> {allergy}
-                                    </span>
-                                ))}
-                            </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">Email</label>
+                        <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-gray-400" />
+                            <p className="text-gray-900">{profile.email}</p>
                         </div>
-
-                        <div>
-                            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Chronic Conditions</h3>
-                            {user.medicalConditions && user.medicalConditions.length > 0 ? (
-                                <div className="flex flex-wrap gap-2">
-                                    {user.medicalConditions.map(condition => (
-                                        <span key={condition} className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium border border-blue-100">
-                                            {condition}
-                                        </span>
-                                    ))}
-                                </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">Phone</label>
+                        <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-gray-400" />
+                            {isEditing ? (
+                                <input
+                                    type="tel"
+                                    value={profile.phone}
+                                    onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gov-blue-500 outline-none"
+                                />
                             ) : (
-                                <p className="text-gray-400 italic">No known conditions</p>
+                                <p className="text-gray-900">{profile.phone}</p>
                             )}
                         </div>
                     </div>
-                </div>
-
-                {/* Emergency Contact */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-                    <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
-                        <div className="bg-green-100 p-2 rounded-lg text-green-600">
-                            <Phone className="h-6 w-6" />
-                        </div>
-                        <h2 className="text-xl font-bold text-gray-800">Emergency Contact</h2>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">Date of Birth</label>
+                        <p className="text-gray-900">
+                            {new Date(profile.dateOfBirth).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                        </p>
                     </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">Gender</label>
+                        <p className="text-gray-900">{profile.gender}</p>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">Blood Group</label>
+                        <span className="inline-block bg-red-100 text-red-700 px-3 py-1 rounded-full font-bold">
+                            {profile.bloodGroup || 'Not Set'}
+                        </span>
+                    </div>
+                </div>
+            </div>
 
-                    <div className="grid md:grid-cols-3 gap-6">
-                        <div className="space-y-1">
-                            <label className="text-sm text-gray-500">Name</label>
-                            <div className="font-medium text-gray-900">{user.emergencyContact?.name}</div>
+            {/* Address */}
+            <div className="bg-white rounded-xl shadow-sm border border-gov-blue-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100 bg-gov-blue-50">
+                    <h2 className="text-lg font-bold text-gov-blue-700 flex items-center gap-2">
+                        <MapPin className="h-5 w-5" /> Address
+                    </h2>
+                </div>
+                <div className="p-6">
+                    <p className="text-gray-900">
+                        {profile.address?.street || 'No address'}<br />
+                        {profile.address?.city}, {profile.address?.state} - {profile.address?.pincode}
+                    </p>
+                </div>
+            </div>
+
+            {/* Emergency Contact */}
+            <div className="bg-white rounded-xl shadow-sm border border-gov-blue-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100 bg-red-50">
+                    <h2 className="text-lg font-bold text-red-700 flex items-center gap-2">
+                        <AlertCircle className="h-5 w-5" /> Emergency Contact
+                    </h2>
+                </div>
+                <div className="p-6 grid md:grid-cols-3 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">Name</label>
+                        <p className="text-gray-900 font-medium">{profile.emergencyContact?.name || 'Not Set'}</p>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">Relationship</label>
+                        <p className="text-gray-900">{profile.emergencyContact?.relationship || 'Not Set'}</p>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">Phone</label>
+                        <p className="text-gray-900">{profile.emergencyContact?.phone || 'Not Set'}</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Medical History */}
+            <div className="bg-white rounded-xl shadow-sm border border-gov-blue-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100 bg-gov-blue-50">
+                    <h2 className="text-lg font-bold text-gov-blue-700 flex items-center gap-2">
+                        <Heart className="h-5 w-5" /> Medical History
+                    </h2>
+                </div>
+                <div className="p-6 grid md:grid-cols-3 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-2">Allergies</label>
+                        <div className="flex flex-wrap gap-2">
+                            {(profile.medicalHistory?.allergies || []).length > 0 ? (
+                                profile.medicalHistory?.allergies.map((allergy, i) => (
+                                    <span key={i} className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm">
+                                        {allergy}
+                                    </span>
+                                ))
+                            ) : (
+                                <span className="text-gray-400 text-sm">None recorded</span>
+                            )}
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-sm text-gray-500">Relation</label>
-                            <div className="font-medium text-gray-900">{user.emergencyContact?.relation}</div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-2">Medical Conditions</label>
+                        <div className="flex flex-wrap gap-2">
+                            {(profile.medicalHistory?.conditions || []).length > 0 ? (
+                                profile.medicalHistory?.conditions.map((condition, i) => (
+                                    <span key={i} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm">
+                                        {condition}
+                                    </span>
+                                ))
+                            ) : (
+                                <span className="text-gray-400 text-sm">None recorded</span>
+                            )}
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-sm text-gray-500">Phone</label>
-                            <div className="font-medium text-gray-900">{user.emergencyContact?.phone}</div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-2">Current Medications</label>
+                        <div className="flex flex-wrap gap-2">
+                            {(profile.medicalHistory?.medications || []).length > 0 ? (
+                                profile.medicalHistory?.medications.map((med, i) => (
+                                    <span key={i} className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+                                        {med}
+                                    </span>
+                                ))
+                            ) : (
+                                <span className="text-gray-400 text-sm">None recorded</span>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -15,15 +15,43 @@ const logger = require('../utils/logger');
 // Create appointment
 const createAppointment = async (req, res, next) => {
     try {
-        const { doctorId, departmentId, appointmentDate, timeSlot, symptoms, type } = req.body;
+        // Support both field naming conventions
+        const doctorId = req.body.doctorId || req.body.doctor;
+        const departmentId = req.body.departmentId;
+        const appointmentDate = req.body.appointmentDate;
+        const symptoms = req.body.symptoms;
+        const consultationType = req.body.consultationType || req.body.type || 'in-person';
 
-        // Get patient for current user
-        const patient = await Patient.findOne({ userId: req.user.id });
+        // Normalize timeSlot - support both {start, end} and {startTime, endTime}
+        let timeSlot = req.body.timeSlot || {};
+        if (timeSlot.start && !timeSlot.startTime) {
+            timeSlot = {
+                startTime: timeSlot.start,
+                endTime: timeSlot.end || timeSlot.start
+            };
+        }
+
+        // Get or create patient (demo mode support)
+        let patient;
+        if (req.user && req.user.id) {
+            patient = await Patient.findOne({ userId: req.user.id });
+        }
+
+        // Demo mode - create/find demo patient
         if (!patient) {
-            return sendResponse(res, 400, false, null, null, {
-                code: 'PATIENT_REQUIRED',
-                message: 'Please complete your patient registration first'
-            });
+            patient = await Patient.findOne({ email: 'demo@healthcare.gov.in' });
+            if (!patient) {
+                patient = new Patient({
+                    userId: 'demo-user-id',
+                    name: 'Demo Patient',
+                    email: 'demo@healthcare.gov.in',
+                    phone: '9876543210',
+                    gender: 'Other',
+                    dateOfBirth: new Date('1990-01-01')
+                });
+                await patient.save();
+                logger.info('Created demo patient for booking');
+            }
         }
 
         // Validate doctor exists and is active
@@ -73,7 +101,7 @@ const createAppointment = async (req, res, next) => {
             appointmentDate: new Date(appointmentDate),
             timeSlot,
             symptoms,
-            type: type || 'in-person',
+            consultationType,
             fee: doctor.consultationFee
         });
 
@@ -83,8 +111,8 @@ const createAppointment = async (req, res, next) => {
         const dateStr = new Date(appointmentDate).toISOString().split('T')[0];
         await deleteCache(`slots:${doctorId}:${dateStr}`);
 
-        // Publish event
-        await publishEvent('appointment.created', {
+        // Publish event (non-blocking)
+        publishEvent('appointment.created', {
             appointmentId: appointment._id,
             appointmentNumber: appointment.appointmentNumber,
             patientId: patient._id,
@@ -95,7 +123,7 @@ const createAppointment = async (req, res, next) => {
             departmentName: department.name,
             appointmentDate: appointment.appointmentDate,
             timeSlot: appointment.timeSlot
-        });
+        }).catch(err => logger.warn('Failed to publish event', err));
 
         // Populate and return
         await appointment.populate([
@@ -147,13 +175,22 @@ const getAppointment = async (req, res, next) => {
     }
 };
 
-// List appointments (for current user)
+// List appointments (for current user or demo)
 const listAppointments = async (req, res, next) => {
     try {
         const { status, page = 1, limit = 10, upcoming } = req.query;
 
-        // Get patient for current user
-        const patient = await Patient.findOne({ userId: req.user.id });
+        // Get patient for current user or demo patient
+        let patient;
+        if (req.user && req.user.id) {
+            patient = await Patient.findOne({ userId: req.user.id });
+        }
+
+        // Demo mode - find demo patient
+        if (!patient) {
+            patient = await Patient.findOne({ email: 'demo@healthcare.gov.in' });
+        }
+
         if (!patient) {
             return sendResponse(res, 200, true, [], 'No appointments found');
         }

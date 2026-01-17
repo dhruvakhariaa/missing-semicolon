@@ -7,35 +7,34 @@ const router = express.Router();
 const { body } = require('express-validator');
 
 const appointmentController = require('../controllers/appointmentController');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, optionalAuth } = require('../middleware/auth');
 const { validate } = require('../middleware/validate');
 
-// All appointment routes require authentication
-router.use(authenticate);
-
-// Create appointment
+// Create appointment - use optionalAuth for demo mode
 router.post('/',
+    optionalAuth, // Changed from authenticate to allow demo booking
     [
-        body('doctorId').notEmpty().withMessage('Doctor ID is required'),
+        body('doctor').optional(),
+        body('doctorId').optional(),
         body('appointmentDate').notEmpty().withMessage('Appointment date is required'),
         body('timeSlot').notEmpty().withMessage('Time slot is required'),
-        body('timeSlot.startTime').notEmpty().withMessage('Start time is required'),
-        body('timeSlot.endTime').notEmpty().withMessage('End time is required')
+        body('timeSlot.start').optional(),
+        body('timeSlot.startTime').optional()
     ],
     validate,
     appointmentController.createAppointment
 );
 
-// List current user's appointments
-router.get('/', appointmentController.listAppointments);
+// List appointments - public for demo
+router.get('/', optionalAuth, appointmentController.listAppointments);
 
 // Get appointment by ID
-router.get('/:id', appointmentController.getAppointment);
+router.get('/:id', optionalAuth, appointmentController.getAppointment);
 
-// Update appointment
-router.put('/:id', appointmentController.updateAppointment);
+// Update appointment - requires auth
+router.put('/:id', authenticate, appointmentController.updateAppointment);
 
-// Cancel appointment
-router.delete('/:id', appointmentController.cancelAppointment);
+// Cancel appointment - requires auth
+router.delete('/:id', authenticate, appointmentController.cancelAppointment);
 
 module.exports = router;

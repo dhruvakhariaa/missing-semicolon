@@ -15,12 +15,31 @@ const connectRedis = async () => {
             port: process.env.REDIS_PORT || 6379,
             password: process.env.REDIS_PASSWORD || undefined,
             db: process.env.REDIS_DB || 0,
-            retryDelayOnFailover: 100,
-            maxRetriesPerRequest: 3,
+            retryStrategy: (times) => {
+                if (times > 2) {
+                    logger.warn('Redis connection failed, continuing without cache');
+                    return null; // Stop retrying
+                }
+                return 200; // Retry after 200ms
+            },
+            maxRetriesPerRequest: 1,
+            connectTimeout: 2000, // 2 second timeout
             lazyConnect: true
         });
 
-        await redisClient.connect();
+        // Add timeout to connection attempt
+        const connectPromise = redisClient.connect();
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Redis connection timeout')), 3000)
+        );
+
+        try {
+            await Promise.race([connectPromise, timeoutPromise]);
+        } catch (err) {
+            logger.warn('Redis connection timed out, continuing without cache');
+            redisClient = null;
+            return null;
+        }
 
         redisClient.on('error', (err) => {
             logger.error('Redis Client Error:', err);
@@ -32,8 +51,8 @@ const connectRedis = async () => {
 
         return redisClient;
     } catch (error) {
-        logger.error(`Redis Connection Error: ${error.message}`);
-        // Don't throw - allow app to work without Redis
+        logger.warn(`Redis Connection Error: ${error.message} - App will continue without cache`);
+        redisClient = null;
         return null;
     }
 };

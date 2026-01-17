@@ -14,7 +14,19 @@ const connectRabbitMQ = async () => {
     try {
         const rabbitUrl = process.env.RABBITMQ_URL || 'amqp://guest:guest@localhost:5672';
 
-        connection = await amqp.connect(rabbitUrl);
+        // Add timeout for connection attempt
+        const connectPromise = amqp.connect(rabbitUrl);
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('RabbitMQ connection timeout')), 3000)
+        );
+
+        try {
+            connection = await Promise.race([connectPromise, timeoutPromise]);
+        } catch (err) {
+            logger.warn('RabbitMQ connection timed out, continuing without messaging');
+            return null;
+        }
+
         channel = await connection.createChannel();
 
         // Setup exchange for event-driven architecture
@@ -33,7 +45,7 @@ const connectRabbitMQ = async () => {
 
         return { connection, channel };
     } catch (error) {
-        logger.error(`RabbitMQ Connection Error: ${error.message}`);
+        logger.warn(`RabbitMQ Connection Error: ${error.message} - App will continue without messaging`);
         return null;
     }
 };

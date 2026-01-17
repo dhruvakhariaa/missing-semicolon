@@ -137,7 +137,7 @@ const Home: React.FC = () => {
                     </Link>
 
                     {/* 6. Lab Reports */}
-                    <div className="group cursor-pointer">
+                    <Link to="/lab-reports" className="group">
                         <div className="aspect-[4/5] bg-white rounded-2xl border border-gov-blue-100 p-6 flex flex-col justify-between hover:shadow-xl hover:border-gov-blue-300 transition-all relative overflow-hidden">
                             <div className="h-14 w-14 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 mb-4 group-hover:scale-110 transition-transform">
                                 <FileText className="h-7 w-7" />
@@ -150,10 +150,10 @@ const Home: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </Link>
 
                     {/* 7. Blood Bank */}
-                    <div className="group cursor-pointer">
+                    <Link to="/blood-bank" className="group">
                         <div className="aspect-[4/5] bg-white rounded-2xl border border-gov-blue-100 p-6 flex flex-col justify-between hover:shadow-xl hover:border-gov-blue-300 transition-all relative overflow-hidden">
                             <div className="h-14 w-14 bg-red-50 rounded-xl flex items-center justify-center text-red-600 mb-4 group-hover:scale-110 transition-transform">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18.6 4.7a6 6 0 0 1 0 8.5l-6 6a1 1 0 0 1-1.4 0l-6-6a6 6 0 0 1 8.5-8.5l.7.7.7-.7Z" /><path d="M12 11v6" /></svg>
@@ -166,10 +166,10 @@ const Home: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </Link>
 
                     {/* 8. Ambulance */}
-                    <div className="group cursor-pointer">
+                    <Link to="/emergency" className="group">
                         <div className="aspect-[4/5] bg-white rounded-2xl border border-gov-blue-100 p-6 flex flex-col justify-between hover:shadow-xl hover:border-gov-blue-300 transition-all relative overflow-hidden">
                             <div className="h-14 w-14 bg-red-100 rounded-xl flex items-center justify-center text-red-700 mb-4 group-hover:scale-110 transition-transform">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
@@ -182,7 +182,7 @@ const Home: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </Link>
 
                 </div>
             </div>
