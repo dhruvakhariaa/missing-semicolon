@@ -74,5 +74,4 @@ docs/_build/
 services/*/node_modules/
 frontend/node_modules/
 packages/*/node_modules/
-
 package-lock.json
