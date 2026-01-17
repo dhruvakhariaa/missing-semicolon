@@ -5,7 +5,8 @@ const {
     loginFarmer,
     getFarmerProfile,
     addLandParcel,
-    updateLandParcel
+    updateLandParcel,
+    enrollInScheme
 } = require('../controllers/farmerController');
 
 const router = express.Router();
@@ -26,5 +27,6 @@ router.post('/login', loginFarmer);
 router.get('/:id', getFarmerProfile);
 router.post('/:id/land', addLandParcel);
 router.put('/:id/land/:parcelId', updateLandParcel);
+router.post('/:id/schemes/enroll', enrollInScheme);
 
 module.exports = router;

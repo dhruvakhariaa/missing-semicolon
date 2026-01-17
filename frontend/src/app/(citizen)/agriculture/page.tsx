@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-    Tractor, Sprout, CloudSun, AlertTriangle, Droplets, CalendarDays, Menu, Phone, MessageSquare, Plus, Leaf, Sun, CloudRain, Wind, Thermometer, CloudLightning
+    Tractor, Sprout, CloudSun, AlertTriangle, Droplets, CalendarDays, Menu, Phone, MessageSquare, Plus, Leaf, Sun, CloudRain, Wind, Thermometer, CloudLightning, Cloud, CloudFog
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -37,6 +37,18 @@ export default function DashboardPage() {
     const [isIrrigationModalOpen, setIsIrrigationModalOpen] = useState(false);
     const [selectedParcel, setSelectedParcel] = useState<any>(null);
     const [editSowingDate, setEditSowingDate] = useState('');
+    const [selectedScheme, setSelectedScheme] = useState<any>(null);
+    const [isEligibilityModalOpen, setIsEligibilityModalOpen] = useState(false);
+
+    // Application & Profile State
+    const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
+    const [farmerProfile, setFarmerProfile] = useState<any>(null);
+    const [enrolledSchemes, setEnrolledSchemes] = useState<any[]>([]);
+    const [applicationForm, setApplicationForm] = useState({
+        bankAccount: '',
+        category: 'Small (< 2ha / 5 acres)',
+        declaration: false
+    });
 
     const [newParcel, setNewParcel] = useState({
         surveyNumber: '', area: '', village: '', irrigationType: 'Rainfed', currentCrop: '', sowingDate: ''
@@ -46,6 +58,20 @@ export default function DashboardPage() {
     const [editingSoil, setEditingSoil] = useState(false);
     const [soilForm, setSoilForm] = useState({ ph: '', nitrogen: '', phosphorus: '', organicCarbon: '0.75' });
     const [irrigationDateInput, setIrrigationDateInput] = useState('');
+
+    useEffect(() => {
+        if (farmerId) {
+            fetch(`http://localhost:3002/api/agriculture/farmers/${farmerId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        setFarmerProfile(data.data);
+                        if (data.data.enrolledSchemes) setEnrolledSchemes(data.data.enrolledSchemes);
+                    }
+                })
+                .catch(err => console.error("Failed to fetch profile", err));
+        }
+    }, [farmerId]);
 
     const updateParcel = async (parcelId: string, updates: any) => {
         try {
@@ -57,10 +83,38 @@ export default function DashboardPage() {
             const data = await res.json();
             if (data.success) {
                 setParcels(data.data);
-                const updated = data.data.find((p: any) => p._id === parcelId);
-                if (updated) setSelectedParcel(updated);
+                // Ensure ID comparison is safe
+                const updated = data.data.find((p: any) => String(p._id) === String(parcelId));
+                if (updated) setSelectedParcel({ ...updated }); // Spread to ensure new reference
             }
         } catch (error) { console.error("Failed to update parcel", error); }
+    };
+
+    const checkEligibility = (scheme: any) => {
+        if (!scheme.criteria) return { qualified: true, reason: "Open to all eligible farmers." };
+
+        const totalArea = parcels.reduce((sum, p) => sum + (Number(p.area) || 0), 0);
+        const allCrops = parcels.map(p => p.currentCrop).filter(Boolean);
+
+        if (scheme.criteria.type === 'land_holding') {
+            if (scheme.criteria.maxArea && totalArea > scheme.criteria.maxArea) {
+                return { qualified: false, reason: `Total land holding (${totalArea} acres) exceeds limit of ${scheme.criteria.maxArea} acres.` };
+            }
+            if (scheme.criteria.minArea && totalArea < scheme.criteria.minArea) {
+                return { qualified: false, reason: `Total land holding (${totalArea} acres) is less than required ${scheme.criteria.minArea} acres.` };
+            }
+        }
+
+        if (scheme.criteria.type === 'crop_based') {
+            const hasRequiredCrop = scheme.criteria.requiredCrops.some((c: string) =>
+                allCrops.some(farmerCrop => farmerCrop.toLowerCase().includes(c.toLowerCase()))
+            );
+            if (!hasRequiredCrop) {
+                return { qualified: false, reason: `Required crops (${scheme.criteria.requiredCrops.join(', ')}) not found in your active parcels.` };
+            }
+        }
+
+        return { qualified: true, reason: "You meet all the criteria based on your land and crop details." };
     };
 
     useEffect(() => {
@@ -166,14 +220,7 @@ export default function DashboardPage() {
                         <p className="text-lg md:text-xl text-blue-100 mb-8 leading-relaxed max-w-xl">
                             Access land records, crop advisories, and direct benefit transfers seamlessly on India's unified platform.
                         </p>
-                        <div className="flex flex-wrap gap-4">
-                            <Button className="bg-white text-sky-900 hover:bg-blue-50 font-semibold px-6 py-6 rounded-xl text-base" onClick={() => setIsAddParcelOpen(true)}>
-                                Add Land Parcel
-                            </Button>
-                            <Button variant="outline" className="bg-transparent text-white border-white/50 hover:bg-white/10 hover:text-white px-6 py-6 rounded-xl text-base">
-                                Check Weather
-                            </Button>
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -214,49 +261,68 @@ export default function DashboardPage() {
                         </TabsList>
                     </div>
 
-                    <TabsContent value="land" className="space-y-6">                         <div className="grid md:grid-cols-3 gap-6">
-                        <Card className="col-span-1 border-none shadow-md bg-white rounded-2xl overflow-hidden">
-                            <CardHeader className="bg-sky-50 pb-8">
-                                <div className="w-10 h-10 bg-sky-100 rounded-lg flex items-center justify-center mb-4">
-                                    <Leaf className="h-6 w-6 text-sky-600" />
-                                </div>
-                                <CardTitle className="text-gray-600 text-sm font-medium uppercase tracking-wider">Total Holdings</CardTitle>
-                                <h3 className="text-4xl font-bold text-sky-900 mt-2 flex items-baseline gap-2">
-                                    {totalAcres} <span className="text-lg font-medium text-gray-500">Acres</span>
-                                </h3>
-                            </CardHeader>
-                            <CardContent className="pt-6">
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                        <span className="text-gray-600 text-sm">Irrigated</span>
-                                        <span className="font-bold text-gray-900">{irrigatedAcres} Ac</span>
+                    <TabsContent value="land" className="space-y-8">
+                        {/* Horizontal Total Holdings Bar */}
+                        <Card className="border-none shadow-xl bg-[#2B85CF] text-white rounded-3xl overflow-hidden relative">
+                            {/* Decorative Background Pattern */}
+                            <div className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
+                            <div className="absolute bottom-0 left-0 -ml-16 -mb-16 h-48 w-48 rounded-full bg-black/10 blur-2xl"></div>
+
+                            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-8 gap-8">
+                                <div className="flex items-center gap-6">
+                                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/10 shadow-inner shrink-0">
+                                        <Leaf className="h-8 w-8 text-white" />
                                     </div>
-                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                        <span className="text-gray-600 text-sm">Rainfed</span>
-                                        <span className="font-bold text-gray-900">{rainfedAcres} Ac</span>
+                                    <div>
+                                        <CardTitle className="text-blue-50 text-sm font-bold uppercase tracking-widest mb-1">Total Holdings</CardTitle>
+                                        <h3 className="text-5xl font-extrabold flex items-baseline gap-2 text-white leading-none">
+                                            {totalAcres} <span className="text-xl font-medium text-blue-100">Acres</span>
+                                        </h3>
                                     </div>
                                 </div>
+
+                                <div className="flex flex-1 w-full md:w-auto items-center justify-center gap-4 px-8">
+                                    {Number(irrigatedAcres) > 0 && (
+                                        <div className="flex-1 max-w-xs flex justify-between items-center p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10">
+                                            <span className="text-blue-50 font-medium">Irrigated</span>
+                                            <span className="font-bold text-white text-xl">{irrigatedAcres} Ac</span>
+                                        </div>
+                                    )}
+                                    <div className="flex-1 max-w-xs flex justify-between items-center p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10">
+                                        <span className="text-blue-50 font-medium">Rainfed</span>
+                                        <span className="font-bold text-white text-xl">{rainfedAcres} Ac</span>
+                                    </div>
+                                </div>
+
                                 <Button
-                                    className="w-full mt-6 bg-sky-600 hover:bg-sky-700 text-white rounded-xl py-6"
+                                    className="w-full md:w-auto bg-white text-blue-700 hover:bg-blue-50 font-bold rounded-xl py-6 px-8 shadow-lg hover:shadow-xl transition-all whitespace-nowrap"
                                     onClick={() => setIsAddParcelOpen(true)}
                                 >
-                                    Add New Parcel
+                                    + Add New Parcel
                                 </Button>
-                            </CardContent>
+                            </div>
                         </Card>
-                        <div className="col-span-1 md:col-span-2">
-                            <h3 className="font-semibold text-lg mb-4 text-gray-900 flex items-center gap-2">
-                                <Tractor className="h-5 w-5 text-sky-600" />
-                                Active Parcels
-                            </h3>
-                            <div className="grid gap-4 md:grid-cols-2">
+
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <h3 className="font-bold text-xl text-gray-900 flex items-center gap-2">
+                                    <div className="p-2 bg-blue-100 rounded-lg">
+                                        <Tractor className="h-5 w-5 text-blue-700" />
+                                    </div>
+                                    Active Parcels
+                                </h3>
+                                <span className="text-sm text-gray-500 font-medium">{parcels.length} Parcels Found</span>
+                            </div>
+
+                            <div className="grid gap-5 md:grid-cols-2">
                                 {parcels.length === 0 ? (
-                                    <div className="col-span-full flex flex-col items-center justify-center p-12 border-2 border-dashed border-gray-200 rounded-2xl bg-white text-gray-500">
-                                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                                            <Plus className="h-8 w-8 text-gray-400" />
+                                    <div className="col-span-full flex flex-col items-center justify-center p-16 border-2 border-dashed border-gray-200 rounded-3xl bg-white text-gray-400 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setIsAddParcelOpen(true)}>
+                                        <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                                            <Plus className="h-10 w-10 text-gray-300" />
                                         </div>
-                                        <p className="font-medium">No land parcels found</p>
-                                        <p className="text-sm mt-1">Add your first parcel to get started</p>
+                                        <p className="font-bold text-lg text-gray-600">No land parcels found</p>
+                                        <p className="text-sm mt-1 mb-6">Add your first parcel to get started</p>
+                                        <Button variant="outline">Add Parcel Now</Button>
                                     </div>
                                 ) : (
                                     parcels.map((parcel, idx) => {
@@ -265,44 +331,44 @@ export default function DashboardPage() {
                                             : 0;
 
                                         return (
-                                            <Card key={idx} className="hover:shadow-lg transition-shadow border-gray-100 shadow-sm rounded-xl overflow-hidden group bg-white">
-                                                <CardHeader className="pb-3 border-b border-gray-50 bg-gray-50/50">
+                                            <Card key={idx} className="hover:shadow-xl hover:border-blue-300 transition-all duration-300 border border-gray-200 shadow-sm rounded-2xl overflow-hidden group bg-white">
+                                                <CardHeader className="pb-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
                                                     <div className="flex justify-between items-center">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="h-8 w-8 bg-sky-100 rounded-lg flex items-center justify-center text-sky-700 font-bold text-xs">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-blue-600 font-black text-sm shadow-sm ring-1 ring-gray-100">
                                                                 {parcel.surveyNumber.slice(0, 2)}
                                                             </div>
                                                             <div>
-                                                                <h4 className="font-semibold text-gray-900 leading-none">Sy. {parcel.surveyNumber}</h4>
-                                                                <p className="text-xs text-gray-500 mt-1">{parcel.village}</p>
+                                                                <h4 className="font-bold text-gray-900 leading-tight text-lg">Sy. {parcel.surveyNumber}</h4>
+                                                                <p className="text-xs font-semibold text-gray-400 mt-0.5 tracking-wide uppercase">{parcel.village}</p>
                                                             </div>
                                                         </div>
-                                                        <Badge className="bg-sky-100 text-sky-800 hover:bg-sky-200 border-none px-3 py-1">Vegetative</Badge>
+                                                        <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-none px-3 py-1 font-bold shadow-sm">Vegetative</Badge>
                                                     </div>
                                                 </CardHeader>
-                                                <CardContent className="pt-4 space-y-4">
+                                                <CardContent className="pt-5 space-y-5">
                                                     <div className="grid grid-cols-2 gap-4">
-                                                        <div>
-                                                            <p className="text-xs text-gray-500 mb-1">Crop Type</p>
-                                                            <p className="font-semibold text-gray-900 flex items-center gap-2">
-                                                                <Sprout className="h-3 w-3 text-sky-500" />
+                                                        <div className="p-3 bg-orange-50/50 rounded-xl border border-orange-50">
+                                                            <p className="text-xs font-bold text-orange-400 uppercase tracking-wider mb-1">Crop Type</p>
+                                                            <p className="font-bold text-gray-900 flex items-center gap-2 text-base">
+                                                                <Sprout className="h-4 w-4 text-orange-500" />
                                                                 {parcel.currentCrop}
                                                             </p>
                                                         </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-500 mb-1">Area</p>
-                                                            <p className="font-semibold text-gray-900 flex items-center gap-2">
-                                                                <Leaf className="h-3 w-3 text-sky-500" />
+                                                        <div className="p-3 bg-blue-50/50 rounded-xl border border-blue-50">
+                                                            <p className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1">Area</p>
+                                                            <p className="font-bold text-gray-900 flex items-center gap-2 text-base">
+                                                                <Leaf className="h-4 w-4 text-blue-500" />
                                                                 {parcel.area} Ac
                                                             </p>
                                                         </div>
                                                     </div>
 
-                                                    <div className="bg-sky-50 rounded-lg p-3">
-                                                        <div className="flex justify-between items-center">
+                                                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                                        <div className="flex justify-between items-center mb-2">
                                                             <div>
-                                                                <p className="text-xs text-sky-700 mb-1">Sowing Progress</p>
-                                                                <p className="text-sm font-bold text-sky-900">
+                                                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Sowing Progress</p>
+                                                                <p className="text-lg font-black text-gray-800 mt-0.5">
                                                                     {daysSown >= 0 ? `${daysSown} Days` : 'Not Sown'}
                                                                 </p>
                                                             </div>
@@ -312,16 +378,16 @@ export default function DashboardPage() {
                                                                     setEditSowingDate(parcel.sowingDate ? parcel.sowingDate.split('T')[0] : '');
                                                                     setIsEditParcelOpen(true);
                                                                 }}
-                                                                className="text-white bg-sky-600 hover:bg-sky-700 rounded-full p-2 w-8 h-8 flex items-center justify-center transition-colors shadow-sm"
+                                                                className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full p-2 transition-all"
                                                             >
-                                                                <div className="text-xs">✎</div>
+                                                                <div className="text-sm font-bold">Edit</div>
                                                             </button>
                                                         </div>
-                                                        <Progress value={Math.min((daysSown / 120) * 100, 100)} className="h-1.5 mt-2 bg-sky-200" />
+                                                        <Progress value={Math.min((daysSown / 120) * 100, 100)} className="h-2 bg-gray-200 [&>*]:bg-blue-600" />
                                                     </div>
 
-                                                    <div className="flex gap-2">
-                                                        <Button size="sm" variant="outline" className="flex-1 text-xs border-gray-200 hover:bg-gray-50 text-gray-600 rounded-lg h-9" onClick={() => {
+                                                    <div className="grid grid-cols-2 gap-3 pt-1">
+                                                        <Button size="sm" variant="outline" className="w-full font-semibold text-xs border-gray-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 text-gray-600 rounded-xl h-10 transition-colors" onClick={() => {
                                                             setSelectedParcel(parcel);
                                                             setSoilForm({
                                                                 ph: parcel.soilDetails?.ph || '6.5',
@@ -331,13 +397,18 @@ export default function DashboardPage() {
                                                             });
                                                             setEditingSoil(false);
                                                             setIsSoilCardOpen(true);
-                                                        }}>Soil Card</Button>
-                                                        <Button size="sm" variant="outline" className="flex-1 text-xs border-gray-200 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 text-gray-600 rounded-lg h-9" onClick={() => {
+                                                        }}>
+                                                            <Leaf className="w-3 h-3 mr-2" />
+                                                            Soil Card
+                                                        </Button>
+                                                        <Button size="sm" variant="outline" className="w-full font-semibold text-xs border-gray-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 text-gray-600 rounded-xl h-10 transition-colors" onClick={() => {
                                                             setSelectedParcel(parcel);
-                                                            // Default input to today or last irrigation? usually for logging new, default to today
                                                             setIrrigationDateInput(new Date().toISOString().split('T')[0]);
                                                             setIsIrrigationModalOpen(true);
-                                                        }}>Irrigation</Button>
+                                                        }}>
+                                                            <Droplets className="w-3 h-3 mr-2" />
+                                                            Irrigation
+                                                        </Button>
                                                     </div>
                                                 </CardContent>
                                             </Card>
@@ -346,14 +417,14 @@ export default function DashboardPage() {
                                 )}
                             </div>
                         </div>
-                    </div> </TabsContent>
+                    </TabsContent>
                     <TabsContent value="advisory"> <AdvisoryDashboard crops={farmerCrops} /> </TabsContent>
                     <TabsContent value="subsidies">                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {schemes.length === 0 ? (
                             <p className="col-span-full text-center text-gray-500">No active schemes found at the moment.</p>
                         ) : (
                             schemes.map((scheme, idx) => (
-                                <Card key={idx} className="border-none shadow-sm rounded-xl overflow-hidden group hover:shadow-md transition-all bg-white">
+                                <Card key={idx} className="flex flex-col h-full hover:shadow-xl hover:border-blue-300 transition-all duration-300 border border-gray-200 shadow-sm rounded-2xl overflow-hidden group bg-white">
                                     <CardHeader className={`${idx % 2 === 0 ? 'bg-sky-50' : 'bg-blue-50'} pb-6`}>
                                         <div className="flex justify-between items-start mb-2">
                                             <Badge className={`border-none ${idx % 2 === 0 ? 'bg-white text-sky-700' : 'bg-white text-blue-700'}`}>Active Scheme</Badge>
@@ -361,7 +432,7 @@ export default function DashboardPage() {
                                         </div>
                                         <CardTitle className="text-lg text-gray-900 leading-tight">{scheme.name}</CardTitle>
                                     </CardHeader>
-                                    <CardContent className="pt-6">
+                                    <CardContent className="pt-6 flex-1">
                                         <p className="text-sm text-gray-600 mb-4 line-clamp-2">{scheme.description}</p>
                                         <div className="p-3 bg-gray-50 rounded-lg">
                                             <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">Benefit</p>
@@ -369,67 +440,130 @@ export default function DashboardPage() {
                                         </div>
                                     </CardContent>
                                     <CardFooter className="pt-0">
-                                        <Button className={`w-full text-white rounded-xl ${idx % 2 === 0 ? 'bg-sky-600 hover:bg-sky-700' : 'bg-blue-600 hover:bg-blue-700'}`}>Check Eligibility</Button>
+                                        <Button
+                                            className={`w-full text-white rounded-xl ${idx % 2 === 0 ? 'bg-sky-600 hover:bg-sky-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                                            onClick={() => {
+                                                setSelectedScheme(scheme);
+                                                setIsEligibilityModalOpen(true);
+                                            }}
+                                        >
+                                            Check Eligibility
+                                        </Button>
                                     </CardFooter>
                                 </Card>
                             ))
                         )}
                     </div> </TabsContent>
-                    <TabsContent value="weather">                         <div className="grid md:grid-cols-2 gap-8">
-                        {/* Daily Forecast Grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                            {weather.map((day, idx) => (
-                                <Card key={idx} className={`border-none shadow-sm rounded-2xl ${day.condition.includes('Rain') ? 'bg-blue-50' : 'bg-white'}`}>
-                                    <CardContent className="p-4 flex flex-col items-center justify-center text-center py-8">
-                                        <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">{day.day}</span>
-                                        {day.condition.includes('Sunny') && <Sun className="h-10 w-10 text-orange-400 mb-3" />}
-                                        {day.condition.includes('Cloud') && <CloudSun className="h-10 w-10 text-gray-400 mb-3" />}
-                                        {day.condition.includes('Rain') && <CloudRain className="h-10 w-10 text-blue-500 mb-3" />}
-                                        {day.condition.includes('Thunder') && <CloudLightning className="h-10 w-10 text-indigo-500 mb-3" />}
+                    <TabsContent value="weather" className="space-y-8">
+                        {/* Daily Forecast Scrollable Strip */}
+                        <div className="relative">
+                            <div className="flex gap-4 overflow-x-auto pb-4 px-1 snap-x no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                                {weather.map((day, idx) => {
+                                    const isToday = idx === 0;
+                                    return (
+                                        <Card key={idx} className={`min-w-[150px] md:min-w-[180px] snap-start shrink-0 border-none shadow-sm rounded-2xl transition-all duration-300 hover:-translate-y-1 ${isToday
+                                            ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg ring-4 ring-blue-50 relative overflow-hidden'
+                                            : day.condition.includes('Rain') ? 'bg-blue-50' : 'bg-white'
+                                            }`}>
+                                            {isToday && (
+                                                <div className="absolute top-0 right-0 p-3 opacity-20">
+                                                    <CloudSun className="h-24 w-24 -mr-6 -mt-6" />
+                                                </div>
+                                            )}
+                                            <CardContent className="p-4 flex flex-col items-center justify-center text-center py-6 relative z-10 h-full justify-between">
+                                                <div className="flex flex-col items-center">
+                                                    <span className={`text-xs font-bold uppercase tracking-wider mb-2 ${isToday ? 'text-blue-100' : 'text-gray-400'}`}>
+                                                        {isToday ? 'Today' : day.day}
+                                                    </span>
 
-                                        <span className="text-3xl font-bold text-gray-900">{day.temp}°</span>
-                                        <span className="text-xs font-medium text-gray-500 mt-1 px-2 py-0.5 rounded-full bg-gray-100">{day.condition}</span>
+                                                    {day.condition.includes('Sunny') && <Sun className={`h-8 w-8 mb-2 ${isToday ? 'text-yellow-300' : 'text-orange-400'}`} />}
+                                                    {day.condition.includes('Partly') && <CloudSun className={`h-8 w-8 mb-2 ${isToday ? 'text-blue-200' : 'text-gray-400'}`} />}
+                                                    {day.condition.includes('Cloudy') && <Cloud className={`h-8 w-8 mb-2 ${isToday ? 'text-blue-200' : 'text-gray-400'}`} />}
+                                                    {day.condition.includes('Rain') && <CloudRain className={`h-8 w-8 mb-2 ${isToday ? 'text-blue-200' : 'text-blue-500'}`} />}
+                                                    {day.condition.includes('Thunder') && <CloudLightning className={`h-8 w-8 mb-2 ${isToday ? 'text-yellow-200' : 'text-indigo-500'}`} />}
+                                                    {day.condition.includes('Fog') && <CloudFog className={`h-8 w-8 mb-2 ${isToday ? 'text-blue-200' : 'text-gray-400'}`} />}
 
-                                        {day.alert && day.alert !== 'Normal' && (
-                                            <div className="mt-4 w-full">
-                                                <Badge variant="destructive" className="w-full justify-center text-[10px] py-0.5">Alert</Badge>
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            ))}
+                                                    <span className={`text-2xl font-bold ${isToday ? 'text-white' : 'text-gray-900'}`}>{day.temp}°</span>
+                                                </div>
+
+                                                <div className="w-full flex flex-col items-center mt-2 gap-2">
+                                                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${isToday ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
+                                                        }`}>
+                                                        {day.condition}
+                                                    </span>
+
+                                                    {day.alert && day.alert !== 'Normal' && (
+                                                        <Badge variant="destructive" className="w-full justify-center text-[10px] py-0.5 bg-red-500">Alert</Badge>
+                                                    )}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    );
+                                })}
+                            </div>
                         </div>
 
                         {/* Active Alerts Section */}
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                <AlertTriangle className="h-5 w-5 text-red-500" />
-                                Active Weather Advisories
-                            </h3>
+                        <div className="grid md:grid-cols-2 gap-6">
                             <div className="bg-red-50 border-none rounded-2xl p-6 relative overflow-hidden">
-                                <div className="absolute right-0 top-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-red-100 blur-2xl"></div>
-                                <h4 className="font-bold text-red-900 text-lg relative z-10">Heavy Rainfall Warning</h4>
-                                <p className="text-red-800/80 text-sm mt-2 relative z-10 leading-relaxed">
-                                    Heavy to very heavy rainfall likely in Aurangabad district over next 24 hours. Postpone chemical spraying operations until further notice.
-                                </p>
-                                <div className="mt-4 flex items-center gap-2 text-xs font-bold text-red-900/60 uppercase tracking-wider relative z-10">
-                                    <span>Issued by IMD</span>
-                                    <span>•</span>
-                                    <span>10:30 AM Today</span>
-                                </div>
+                                {weather.some(d => d.alert && d.alert !== 'Normal') ? (
+                                    (() => {
+                                        const alertDay = weather.find(d => d.alert && d.alert !== 'Normal') || weather[0];
+                                        const isRain = alertDay?.alert?.includes('Rain') || alertDay?.alert?.includes('Thunderstorm');
+                                        const isHeat = alertDay?.alert?.includes('Heat');
+
+                                        return (
+                                            <>
+                                                <div className="absolute right-0 top-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-red-100 blur-2xl"></div>
+                                                <div className="flex items-center gap-2 mb-2 relative z-10">
+                                                    <AlertTriangle className="h-5 w-5 text-red-500" />
+                                                    <h3 className="font-bold text-red-900 text-lg">Active Advisory</h3>
+                                                </div>
+                                                <h4 className="font-semibold text-red-800 text-base mb-1 relative z-10">{alertDay?.alert}</h4>
+                                                <p className="text-red-700/80 text-sm leading-relaxed relative z-10">
+                                                    {isRain
+                                                        ? `Heavy rainfall expected on ${alertDay?.day}. Postpone chemical spraying operations.`
+                                                        : isHeat
+                                                            ? `High temperatures expected on ${alertDay?.day}. Ensure adequate irrigation.`
+                                                            : `Severe weather conditions expected on ${alertDay?.day}. Take necessary precautions.`}
+                                                </p>
+                                                <div className="mt-4 flex items-center gap-2 text-xs font-bold text-red-900/60 uppercase tracking-wider relative z-10">
+                                                    <span>Issued by IMD</span>
+                                                    <span>•</span>
+                                                    <span>Updated Just Now</span>
+                                                </div>
+                                            </>
+                                        );
+                                    })()
+                                ) : (
+                                    <>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                                                <Leaf className="h-3 w-3 text-green-600" />
+                                            </div>
+                                            <h3 className="font-bold text-green-900 text-lg">No Active Alerts</h3>
+                                        </div>
+                                        <p className="text-green-800/80 text-sm leading-relaxed">
+                                            Weather conditions are favorable for agricultural operations. No severe weather warnings for your location.
+                                        </p>
+                                    </>
+                                )}
                             </div>
 
-                            <div className="bg-blue-50 border-none rounded-2xl p-6">
-                                <h4 className="font-bold text-blue-900 text-lg flex items-center gap-2 mb-2">
+                            <div className="bg-blue-50 border-none rounded-2xl p-6 flex flex-col justify-center">
+                                <h3 className="font-bold text-blue-900 text-lg flex items-center gap-2 mb-2">
                                     <Droplets className="h-5 w-5 text-blue-500" />
                                     Farming Recommendation
-                                </h4>
+                                </h3>
                                 <p className="text-blue-800/80 text-sm leading-relaxed">
-                                    Due to expected rain, pause all irrigation for the next 48 hours. Ensure field drainage channels are clear to prevent waterlogging in cotton and soybean fields.
+                                    {weather.some(d => d.alert && d.alert !== 'Normal')
+                                        ? "Take precautionary measures for crops based on the active advisory. Ensure proper drainage or moisture conservation as needed."
+                                        : "Continue with routine agricultural activities. Ideal time for fertilizer application and irrigation as per crop stage."
+                                    }
                                 </p>
                             </div>
                         </div>
-                    </div> </TabsContent>
+                    </TabsContent>
                 </Tabs>
             </div>
 
@@ -597,7 +731,14 @@ export default function DashboardPage() {
                                     <>
                                         <Button variant="outline" size="sm" onClick={() => setEditingSoil(false)}>Cancel</Button>
                                         <Button size="sm" className="bg-green-600 text-white" onClick={async () => {
-                                            await updateParcel(selectedParcel._id, { soilDetails: soilForm });
+                                            await updateParcel(selectedParcel._id, {
+                                                soilDetails: {
+                                                    ph: Number(soilForm.ph),
+                                                    nitrogen: Number(soilForm.nitrogen),
+                                                    phosphorus: Number(soilForm.phosphorus),
+                                                    organicCarbon: Number(soilForm.organicCarbon)
+                                                }
+                                            });
                                             setEditingSoil(false);
                                         }}>Save Changes</Button>
                                     </>
@@ -650,11 +791,15 @@ export default function DashboardPage() {
                                     <Button
                                         className="bg-blue-600 hover:bg-blue-700 text-white shrink-0"
                                         onClick={() => {
-                                            updateParcel(selectedParcel._id, { lastIrrigationDate: new Date(irrigationDateInput).toISOString() });
+                                            if (!irrigationDateInput) return;
+                                            updateParcel(selectedParcel._id, {
+                                                lastIrrigationDate: new Date(irrigationDateInput).toISOString(),
+                                                irrigationType: 'Irrigated' // Auto-update status to Irrigated
+                                            });
                                             setIsIrrigationModalOpen(false);
                                         }}
                                     >
-                                        Save
+                                        Save & Update Status
                                     </Button>
                                 </div>
                             </div>
@@ -663,6 +808,250 @@ export default function DashboardPage() {
                     </div>
                 </div>
             )}
+
+            {/* Eligibility Modal */}
+            {isEligibilityModalOpen && selectedScheme && (
+                <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-lg p-6 max-w-lg w-full text-gray-900 shadow-xl border-t-4 border-blue-600">
+                        {(() => {
+                            const status = checkEligibility(selectedScheme);
+                            return (
+                                <>
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-gray-900">{selectedScheme.name}</h3>
+                                            <p className="text-gray-500 text-sm mt-1">Scheme ID: #SCH-{Math.floor(Math.random() * 1000)}</p>
+                                        </div>
+                                        <Badge className={`border-none px-3 py-1 ${status.qualified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                            {status.qualified ? 'You are Eligible' : 'Not Eligible'}
+                                        </Badge>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        {!status.qualified && (
+                                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
+                                                <AlertTriangle className="h-5 w-5 text-red-600 shrink-0" />
+                                                <div>
+                                                    <h4 className="font-semibold text-red-900 text-sm">Eligibility Check Failed</h4>
+                                                    <p className="text-red-700 text-sm mt-1">{status.reason}</p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {status.qualified && (
+                                            <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex gap-3">
+                                                <Leaf className="h-5 w-5 text-green-600 shrink-0" />
+                                                <div>
+                                                    <h4 className="font-semibold text-green-900 text-sm">Eligibility Confirmed</h4>
+                                                    <p className="text-green-700 text-sm mt-1">{status.reason}</p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                            <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                                                <Leaf className="h-4 w-4 text-green-600" />
+                                                Benefits
+                                            </h4>
+                                            <p className="text-gray-700">{selectedScheme.desc || selectedScheme.description}</p>
+                                            <div className="mt-3 pt-3 border-t border-gray-200">
+                                                <p className="font-bold text-lg text-blue-700">{selectedScheme.benefits}</p>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900 mb-3">Eligibility Criteria</h4>
+                                            <ul className="space-y-2">
+                                                <li className="flex items-start gap-2 text-sm text-gray-600">
+                                                    <div className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
+                                                    {selectedScheme.eligibility}
+                                                </li>
+                                                <li className="flex items-start gap-2 text-sm text-gray-600">
+                                                    <div className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
+                                                    Click to view full documentation requirements.
+                                                </li>
+                                            </ul>
+                                        </div>
+
+                                        <div className="flex flex-col gap-3">
+                                            {enrolledSchemes.some(s => s.schemeName === selectedScheme.name) ? (
+                                                <Button className="w-full h-12 text-lg bg-green-600 hover:bg-green-700 text-white" disabled>
+                                                    Already Applied
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    disabled={!status.qualified}
+                                                    className={`w-full h-12 text-lg text-white ${status.qualified ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
+                                                    onClick={() => {
+                                                        setIsEligibilityModalOpen(false);
+                                                        setIsApplicationFormOpen(true);
+                                                    }}
+                                                >
+                                                    {status.qualified ? 'Apply Now' : 'Not Eligible to Apply'}
+                                                </Button>
+                                            )}
+                                            <Button variant="ghost" className="w-full text-gray-500" onClick={() => setIsEligibilityModalOpen(false)}>
+                                                Close
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </>
+                            );
+                        })()}
+                    </div>
+                </div>
+            )}
+            {/* Application Form Modal */}
+            {isApplicationFormOpen && selectedScheme && (
+                <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl p-0 max-w-2xl w-full text-gray-900 shadow-xl max-h-[90vh] overflow-y-auto">
+                        <div className="bg-blue-600 p-6 text-white rounded-t-xl">
+                            <h3 className="text-xl font-bold">Apply for {selectedScheme.name}</h3>
+                            <p className="text-blue-100 text-sm opacity-90">Please verify your details before submitting</p>
+                        </div>
+
+                        <div className="p-6 space-y-6">
+                            {/* Section 1: Land Details */}
+                            <div className="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+                                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                    <Tractor className="h-4 w-4 text-blue-600" />
+                                    1. Land Details (Auto-fetched)
+                                </h4>
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div className="bg-white p-3 rounded border border-gray-100">
+                                        <span className="text-gray-500 block text-xs mb-1">Total Land Area</span>
+                                        <span className="font-bold text-gray-900 text-lg">
+                                            {parcels.reduce((sum, p) => sum + (Number(p.area) || 0), 0).toFixed(1)} Acres
+                                        </span>
+                                    </div>
+                                    <div className="bg-white p-3 rounded border border-gray-100">
+                                        <span className="text-gray-500 block text-xs mb-1">Active Crops Link</span>
+                                        <span className="font-medium text-gray-900">
+                                            {parcels.map(p => p.currentCrop).filter(Boolean).join(', ') || 'No active crops'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section 2: Farmer Category */}
+                            <div>
+                                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                                    <Leaf className="h-4 w-4 text-green-600" />
+                                    2. Farmer Category
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    {['Small (< 2ha / 5 acres)', 'Medium (2-10ha / 5-25 acres)', 'Large (> 10ha / 25 acres)'].map((cat, i) => (
+                                        <label key={i} className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${applicationForm.category === cat ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'}`}>
+                                            <input
+                                                type="radio"
+                                                name="category"
+                                                className="h-4 w-4 text-blue-600"
+                                                checked={applicationForm.category === cat}
+                                                onChange={() => setApplicationForm({ ...applicationForm, category: cat })}
+                                            />
+                                            <span className="text-sm font-medium text-gray-700">{cat}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Section 3: Personal Details (Prefilled) */}
+                            <div>
+                                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                    <div className="h-4 w-4 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xs">i</div>
+                                    3. Personal Details (Prefilled)
+                                </h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Name</label>
+                                        <input type="text" className="w-full border rounded-md p-2 bg-gray-50 text-gray-700 text-sm font-medium" value={farmerProfile?.name} disabled />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Mobile</label>
+                                        <input type="text" className="w-full border rounded-md p-2 bg-gray-50 text-gray-700 text-sm font-medium" value={farmerProfile?.phone} disabled />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Village</label>
+                                        <input type="text" className="w-full border rounded-md p-2 bg-gray-50 text-gray-700 text-sm font-medium" value={farmerProfile?.village} disabled />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-500 mb-1">District</label>
+                                        <input type="text" className="w-full border rounded-md p-2 bg-gray-50 text-gray-700 text-sm font-medium" value={farmerProfile?.district} disabled />
+                                    </div>
+                                    <div className="col-span-2">
+                                        <label className="block text-xs font-semibold text-gray-700 mb-1">Bank Account Number <span className="text-red-500">*</span></label>
+                                        <input
+                                            type="text"
+                                            className="w-full border rounded-md p-2 text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                            placeholder="Enter your active bank account number"
+                                            value={applicationForm.bankAccount}
+                                            onChange={(e) => setApplicationForm({ ...applicationForm, bankAccount: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Declaration */}
+                            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                                <label className="flex items-start gap-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="mt-1 h-4 w-4 text-blue-600 rounded border-gray-300"
+                                        checked={applicationForm.declaration}
+                                        onChange={(e) => setApplicationForm({ ...applicationForm, declaration: e.target.checked })}
+                                    />
+                                    <div className="text-sm text-yellow-900">
+                                        <span className="font-bold block mb-1">Declaration</span>
+                                        I declare that I am an active farmer, the land details linked are correct, and I have not applied for duplicate benefits for this scheme.
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div className="flex gap-4 pt-2">
+                                <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-11 shadow-md transition-all" onClick={async () => {
+                                    if (!applicationForm.declaration) {
+                                        alert("Please agree to the declaration before submitting.");
+                                        return;
+                                    }
+                                    if (!applicationForm.bankAccount) {
+                                        alert("Please enter a bank account number.");
+                                        return;
+                                    }
+
+                                    try {
+                                        const res = await fetch(`http://localhost:3002/api/agriculture/farmers/${farmerId}/schemes/enroll`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                schemeName: selectedScheme.name,
+                                                category: applicationForm.category,
+                                                landArea: parcels.reduce((sum, p) => sum + (Number(p.area) || 0), 0),
+                                                bankAccount: applicationForm.bankAccount
+                                            })
+                                        });
+                                        const data = await res.json();
+                                        if (data.success) {
+                                            setEnrolledSchemes(data.data);
+                                            setIsApplicationFormOpen(false);
+                                            alert(`Application for ${selectedScheme.name} Submitted Successfully!`);
+                                        } else {
+                                            alert(`Submission Failed: ${data.message}`);
+                                        }
+                                    } catch (e: any) {
+                                        console.error("Submission error:", e);
+                                        alert(`Connection Error: ${e.message}. Ensure backend is running.`);
+                                    }
+                                }}>
+                                    Submit Application
+                                </Button>
+                                <Button variant="outline" className="flex-1 h-11" onClick={() => setIsApplicationFormOpen(false)}>Cancel</Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Display Enrolled Schemes in Tab (Optional: You can add this to the main layout if needed, currently just showing logic) */}
         </div>
     );
 }

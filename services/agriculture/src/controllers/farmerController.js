@@ -162,16 +162,64 @@ exports.updateLandParcel = async (req, res) => {
         // Check for undefined to allow clearing values (e.g. set to null)
         if (req.body.sowingDate !== undefined) parcel.sowingDate = req.body.sowingDate;
         if (req.body.lastIrrigationDate !== undefined) parcel.lastIrrigationDate = req.body.lastIrrigationDate;
-        if (req.body.soilDetails) parcel.soilDetails = { ...parcel.soilDetails, ...req.body.soilDetails };
+        if (req.body.soilDetails) {
+            console.log('Updating soil details:', req.body.soilDetails);
+            // Ensure we merge with existing details correctly
+            const currentDetails = parcel.soilDetails ? (typeof parcel.soilDetails.toObject === 'function' ? parcel.soilDetails.toObject() : parcel.soilDetails) : {};
+            parcel.soilDetails = { ...currentDetails, ...req.body.soilDetails };
+        }
         if (req.body.currentCrop) parcel.currentCrop = req.body.currentCrop;
         // Add other fields as needed
 
+        farmer.markModified('landParcels');
         await farmer.save();
 
         res.status(200).json({
             success: true,
             data: farmer.landParcels,
             message: 'Land parcel updated successfully'
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Enroll in a scheme
+// @route   POST /api/agriculture/farmers/:id/schemes/enroll
+// @access  Private (Mock)
+exports.enrollInScheme = async (req, res) => {
+    try {
+        const farmer = await Farmer.findById(req.params.id);
+        if (!farmer) {
+            return res.status(404).json({ success: false, message: 'Farmer not found' });
+        }
+
+        const { schemeName, category, landArea, bankAccount } = req.body;
+
+        // Check if already enrolled
+        if (farmer.enrolledSchemes && farmer.enrolledSchemes.some(s => s.schemeName === schemeName)) {
+            return res.status(400).json({ success: false, message: 'Already enrolled in this scheme' });
+        }
+
+        const newEnrollment = {
+            schemeName,
+            status: 'Applied',
+            applicationId: 'APP-' + Math.floor(100000 + Math.random() * 900000),
+            category,
+            landArea,
+            bankAccount
+        };
+
+        if (!farmer.enrolledSchemes) farmer.enrolledSchemes = [];
+        farmer.enrolledSchemes.push(newEnrollment);
+
+        await farmer.save();
+
+        res.status(200).json({
+            success: true,
+            data: farmer.enrolledSchemes,
+            message: 'Enrolled successfully'
         });
     } catch (err) {
         console.error(err.message);

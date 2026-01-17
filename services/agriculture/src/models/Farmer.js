@@ -31,6 +31,7 @@ const LandParcelSchema = new mongoose.Schema({
         nitrogen: Number,
         phosphorus: Number,
         potassium: Number,
+        organicCarbon: Number,
         lastTested: Date
     },
     lastIrrigationDate: {
@@ -73,6 +74,15 @@ const FarmerSchema = new mongoose.Schema({
         required: true
     },
     landParcels: [LandParcelSchema],
+    enrolledSchemes: [{
+        schemeName: String,
+        enrollmentDate: { type: Date, default: Date.now },
+        status: { type: String, default: 'Applied' }, // Applied, Approved, Rejected
+        applicationId: String,
+        category: String,
+        landArea: Number,
+        bankAccount: String
+    }],
     createdAt: {
         type: Date,
         default: Date.now
