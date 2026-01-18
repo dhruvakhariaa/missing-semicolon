@@ -175,7 +175,7 @@ export default function DashboardPage() {
                             <img src="/emblem.jpg" alt="Emblem" className="h-full w-full object-contain mix-blend-multiply" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="font-bold text-lg leading-none tracking-tight">Service Delivery Platform</span>
+                            <span className="font-bold text-lg leading-none tracking-tight">Jan Sewa Portal</span>
                             <span className="text-xs text-gray-500 font-medium tracking-wide">Government of India</span>
                         </div>
                     </div>
@@ -432,7 +432,7 @@ export default function DashboardPage() {
 
                     {/* Tab: Crop Advice */}
                     <TabsContent value="advisory">
-                        <AdvisoryDashboard crops={farmerCrops} />
+                        <AdvisoryDashboard crops={parcels} farmerId={farmerId || undefined} />
                     </TabsContent>
 
                     {/* Tab: Subsidies */}

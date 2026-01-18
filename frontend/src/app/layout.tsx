@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-dm-sans', weight: ['400', '500', '700'] })
 
 export const metadata: Metadata = {
-    title: 'Service Delivery Platform',
+    title: 'Jan Sewa Portal',
     description: 'National-Scale Digital Public Infrastructure',
 }
 

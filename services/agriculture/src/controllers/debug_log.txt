@@ -1,0 +1,176 @@
+[2026-01-18T09:49:55.907Z] Request {"crop":"mango"}
+[2026-01-18T09:49:55.908Z] API Key Present 
+[2026-01-18T09:49:55.908Z] Sending request to Gemini... 
+[2026-01-18T09:49:56.294Z] Gemini Status Code: 429
+[2026-01-18T09:49:56.295Z] Gemini API Error Body: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\nPlease retry in 3.522076853s.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Learn more about Gemini API quotas",
+            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+        "violations": [
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count",
+            "quotaId": "GenerateContentInputTokensPerModelPerMinute-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.0-flash"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "model": "gemini-2.0-flash",
+              "location": "global"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.0-flash"
+            }
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "3s"
+      }
+    ]
+  }
+}
+
+[2026-01-18T09:52:08.200Z] Request {"crop":"mango"}
+[2026-01-18T09:52:08.201Z] API Key Present 
+[2026-01-18T09:52:08.202Z] Sending request to Gemini... 
+[2026-01-18T09:52:08.402Z] Gemini Status Code: 404
+[2026-01-18T09:52:08.403Z] Gemini API Error Body: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[2026-01-18T09:52:59.007Z] Request {"crop":"mango"}
+[2026-01-18T09:52:59.009Z] API Key Present 
+[2026-01-18T09:52:59.009Z] Sending request to Gemini... 
+[2026-01-18T09:52:59.175Z] Gemini Status Code: 404
+[2026-01-18T09:52:59.177Z] Gemini API Error Body: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[2026-01-18T09:53:57.548Z] Request {"crop":"mango"}
+[2026-01-18T09:53:57.549Z] API Key Present 
+[2026-01-18T09:53:57.549Z] Sending request to Gemini... 
+[2026-01-18T09:53:57.721Z] Gemini Status Code: 404
+[2026-01-18T09:53:57.722Z] Gemini API Error Body: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-001 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[2026-01-18T09:55:01.033Z] Request {"crop":"mango"}
+[2026-01-18T09:55:01.035Z] API Key Present 
+[2026-01-18T09:55:01.035Z] Sending request to Gemini... 
+[2026-01-18T09:55:01.263Z] Gemini Status Code: 404
+[2026-01-18T09:55:01.264Z] Gemini API Error Body: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-pro is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[2026-01-18T09:55:58.491Z] Request {"crop":"mango"}
+[2026-01-18T09:55:58.492Z] API Key Present 
+[2026-01-18T09:55:58.492Z] Sending request to Gemini... 
+[2026-01-18T09:55:58.670Z] Gemini Status Code: 404
+[2026-01-18T09:55:58.671Z] Gemini API Error Body: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.0-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[2026-01-18T09:58:04.278Z] Request {"crop":"SugarCane","farmerId":"65a123456789012345678901"}
+[2026-01-18T09:58:04.279Z] GROQ_API_KEY Present 
+[2026-01-18T09:58:04.312Z] Sending request to Groq... 
+[2026-01-18T09:58:05.890Z] Groq Status Code: 200
+[2026-01-18T09:58:05.890Z] Raw Groq Text: {
+  "crop": "SugarCane",
+   "stage": "Vegetative",
+   "advice_en": "For optimal growth, ensure your sugarcane crop receives adequate water and nutrients. Regularly monitor soil moisture levels and fertilize as necessary. Maintain a balanced diet of nitrogen, phosphorus, and potassium for healthy plant development. Proper weed management is also crucial during this stage.",
+   "advice_hi": "अद्भुत वृद्धि के लिए, सुनिश्चित करें कि आपकी गन्ना फसल को पर्याप्त पानी और पोषक तत्व मिलें। नियमित रूप से मिट्टी की नमी के स्तर की निगरानी करें और आवश्यकतानुसार उर्वरक लगाएं। स्वस्थ पौधे के विकास के लिए नाइट्रोजन, फॉस्फोरस और पोटाश का संतुलित आहार बनाए रखें। इस चरण के दौरान उचित खरपतवार प्रबंधन भी बहुत महत्वपूर्ण है।",
+   "type": "General"
+}
+[2026-01-18T09:58:05.891Z] Success: 1
+[2026-01-18T09:58:53.272Z] Request {"crop":"mango (Stage: Unknown, Age: 0 days), mango (Stage: Unknown, Age: 0 days), wheat (Stage: Unknown, Age: 0 days), cotton (Stage: Unknown, Age: 0 days)","farmerId":"696b75925189be0debba8ffd"}
+[2026-01-18T09:58:53.275Z] GROQ_API_KEY Present 
+[2026-01-18T09:58:53.324Z] Sending request to Groq... 
+[2026-01-18T09:58:56.046Z] Groq Status Code: 200
+[2026-01-18T09:58:56.048Z] Raw Groq Text: {
+  "error": "Invalid JSON format, use array of objects"
+}
+[2026-01-18T09:58:56.049Z] Success: 1
+[2026-01-18T09:58:56.061Z] Request {"crop":"mango (Stage: Unknown, Age: 0 days), mango (Stage: Unknown, Age: 0 days), wheat (Stage: Unknown, Age: 0 days), cotton (Stage: Unknown, Age: 0 days)","farmerId":"696b75925189be0debba8ffd"}
+[2026-01-18T09:58:56.061Z] GROQ_API_KEY Present 
+[2026-01-18T09:58:56.071Z] Sending request to Groq... 
+[2026-01-18T09:58:58.705Z] Groq Status Code: 200
+[2026-01-18T09:58:58.706Z] Raw Groq Text: {
+  "error": "Invalid JSON format, use array of objects"
+}
+[2026-01-18T09:58:58.707Z] Success: 1
+[2026-01-18T10:01:49.216Z] Request {"crop":"mango (Stage: Unknown, Age: 0 days), mango (Stage: Unknown, Age: 0 days), wheat (Stage: Unknown, Age: 0 days), cotton (Stage: Unknown, Age: 0 days)","farmerId":"696b75925189be0debba8ffd"}
+[2026-01-18T10:01:49.219Z] GROQ_API_KEY Present 
+[2026-01-18T10:01:49.230Z] Sending request to Groq... 
+[2026-01-18T10:01:52.084Z] Groq Status Code: 200
+[2026-01-18T10:01:52.085Z] Raw Groq Text: {
+  "error": "Invalid JSON format, use array of objects"
+}
+[2026-01-18T10:01:52.085Z] Success: 1
+[2026-01-18T10:01:52.091Z] Request {"crop":"mango (Stage: Unknown, Age: 0 days), mango (Stage: Unknown, Age: 0 days), wheat (Stage: Unknown, Age: 0 days), cotton (Stage: Unknown, Age: 0 days)","farmerId":"696b75925189be0debba8ffd"}
+[2026-01-18T10:01:52.092Z] GROQ_API_KEY Present 
+[2026-01-18T10:01:52.108Z] Sending request to Groq... 
+[2026-01-18T10:01:56.122Z] Groq Status Code: 200
+[2026-01-18T10:01:56.124Z] Raw Groq Text: {
+  "error": "Invalid JSON format, use array of objects"
+}
+[2026-01-18T10:01:56.125Z] Success: 1
+[2026-01-18T10:01:57.661Z] Request {"crop":"mango (Stage: Unknown, Age: 0 days), mango (Stage: Unknown, Age: 0 days), wheat (Stage: Unknown, Age: 0 days), cotton (Stage: Unknown, Age: 0 days)","farmerId":"696b75925189be0debba8ffd"}
+[2026-01-18T10:01:57.662Z] GROQ_API_KEY Present 
+[2026-01-18T10:01:57.669Z] Sending request to Groq... 
+[2026-01-18T10:02:00.501Z] Groq Status Code: 200
+[2026-01-18T10:02:00.503Z] Raw Groq Text: {
+  "error": "Invalid JSON format, use array of objects"
+}
+[2026-01-18T10:02:00.505Z] Success: 1
+[2026-01-18T10:02:00.510Z] Request {"crop":"mango (Stage: Unknown, Age: 0 days), mango (Stage: Unknown, Age: 0 days), wheat (Stage: Unknown, Age: 0 days), cotton (Stage: Unknown, Age: 0 days)","farmerId":"696b75925189be0debba8ffd"}
+[2026-01-18T10:02:00.512Z] GROQ_API_KEY Present 
+[2026-01-18T10:02:00.524Z] Sending request to Groq... 
+[2026-01-18T10:02:03.024Z] Groq Status Code: 200
+[2026-01-18T10:02:03.027Z] Raw Groq Text: {
+  "error": "Invalid JSON format, use array of objects"
+}
+[2026-01-18T10:02:03.028Z] Success: 1

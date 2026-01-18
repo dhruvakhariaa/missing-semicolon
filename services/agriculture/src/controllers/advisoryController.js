@@ -40,9 +40,13 @@ exports.getAdvisories = async (req, res) => {
             }
         }
 
+        // Context logic: checking both DB and Query
         if (!contextString && crop) {
             contextString = crop;
             cropListForFallback = crop.split(',').filter(c => c.trim().length > 0);
+        } else if (crop) {
+            // If we have both, append query crops to be safe, ensuring user request is honored
+            contextString += `, ${crop}`;
         }
 
         if (!contextString) {
@@ -52,7 +56,7 @@ exports.getAdvisories = async (req, res) => {
             });
         }
 
-        // 2. Construct Prompt
+        // 2. Construct Prompt (Restoring Gemini Prompt)
         const prompt = `
             Act as an expert agricultural scientist in India. 
             I need specific advice for these crops: ${contextString}.
@@ -76,7 +80,7 @@ exports.getAdvisories = async (req, res) => {
 
         const options = {
             hostname: 'generativelanguage.googleapis.com',
-            path: `/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`,
+            path: `/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -96,21 +100,44 @@ exports.getAdvisories = async (req, res) => {
                 try {
                     const response = JSON.parse(body);
                     const rawText = response.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                    console.log("DEBUG: Gemini Raw Text:", rawText);
 
                     // Simple cleaning for JSON Markdown
                     let jsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
                     if (jsonStr.startsWith('json')) jsonStr = jsonStr.substring(4).trim();
 
-                    const aiData = JSON.parse(jsonStr);
+                    let advisories = [];
+                    try {
+                        advisories = JSON.parse(jsonStr);
+                    } catch (e) {
+                        console.error("DEBUG: JSON Parse Failed:", e.message);
+                        // Try regex fallback if strict parse fails
+                        const match = jsonStr.match(/\[.*\]/s);
+                        if (match) {
+                            advisories = JSON.parse(match[0]);
+                        } else {
+                            throw new Error("No JSON found");
+                        }
+                    }
 
-                    res.status(200).json({
-                        success: true,
-                        source: 'AI-Direct',
-                        data: Array.isArray(aiData) ? aiData : [aiData]
+                    if (!Array.isArray(advisories)) advisories = [advisories];
+
+                    // Normalize keys
+                    const normalizedAdvisories = advisories.map(a => {
+                        return {
+                            crop: a.crop || a.Crop || a.cropName || a.name || "Unknown Crop",
+                            stage: a.stage || a.Stage || "General",
+                            advice_en: a.advice_en || a.advice || a.english || "Advice not available",
+                            advice_hi: a.advice_hi || a.hindi || "अनुवाद उपलब्ध नहीं है",
+                            type: a.type || a.Type || "General"
+                        };
                     });
 
-                } catch (parseErr) {
-                    console.error("Parse Error:", parseErr);
+                    console.log("DEBUG: Normalized Data:", JSON.stringify(normalizedAdvisories, null, 2));
+                    res.status(200).json({ success: true, data: normalizedAdvisories });
+
+                } catch (error) {
+                    console.error("Parsing Error:", error.message);
                     sendFallback(res, cropListForFallback);
                 }
             });
