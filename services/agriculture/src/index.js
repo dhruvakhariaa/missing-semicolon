@@ -1,11 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+
+dotenv.config(); // Must be loaded before routes/imports that use env vars
+
 const connectDB = require('./config/database');
 const routes = require('./routes');
 const { createLogger, transports, format } = require('winston');
-
-dotenv.config();
 
 // Logger setup
 const logger = createLogger({
