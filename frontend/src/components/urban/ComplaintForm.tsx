@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, X, FileText } from 'lucide-react';
+import { urbanApi } from '@/config/api';
 
 export default function ComplaintForm() {
     const router = useRouter();
@@ -51,7 +52,7 @@ export default function ComplaintForm() {
         setMessage('');
 
         try {
-            const res = await fetch('http://localhost:5003/api/urban/complaints', {
+            const res = await fetch(urbanApi.complaints, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -163,8 +164,8 @@ export default function ComplaintForm() {
                                 type="button"
                                 onClick={() => setFormData({ ...formData, priority })}
                                 className={`px-4 py-2 rounded-lg border-2 font-inter font-medium text-sm transition-all ${formData.priority === priority
-                                        ? getPriorityColor(priority) + ' ring-2 ring-offset-1 ring-brand-300'
-                                        : 'bg-brand-50 text-brand-500 border-brand-100 hover:bg-brand-100'
+                                    ? getPriorityColor(priority) + ' ring-2 ring-offset-1 ring-brand-300'
+                                    : 'bg-brand-50 text-brand-500 border-brand-100 hover:bg-brand-100'
                                     }`}
                             >
                                 {priority}

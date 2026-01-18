@@ -1,6 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Clock, MapPin, Tag, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import { urbanApi } from '@/config/api';
 
 interface Complaint {
     _id: string;
@@ -18,7 +21,7 @@ export default function ComplaintList() {
 
     const fetchComplaints = async () => {
         try {
-            const res = await fetch('http://localhost:5003/api/urban/complaints', { cache: 'no-store' });
+            const res = await fetch(urbanApi.complaints, { cache: 'no-store' });
             const data = await res.json();
             if (data.success) {
                 setComplaints(data.data);

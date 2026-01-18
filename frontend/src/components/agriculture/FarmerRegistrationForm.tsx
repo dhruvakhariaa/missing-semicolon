@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { agricultureApi } from '@/config/api';
 
 export function FarmerRegistrationForm() {
     const router = useRouter();
@@ -25,7 +26,7 @@ export function FarmerRegistrationForm() {
         setLoading(true);
 
         try {
-            const res = await fetch('http://localhost:3002/api/agriculture/farmers', {
+            const res = await fetch(agricultureApi.farmers, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

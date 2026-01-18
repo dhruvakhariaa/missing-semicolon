@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { agricultureApi } from '@/config/api';
 
 interface Advisory {
     crop: string;
@@ -13,7 +14,7 @@ export function AdvisoryDashboard({ crops = [] }: { crops?: string[] }) {
     const [advisories, setAdvisories] = useState<Advisory[]>([]);
 
     useEffect(() => {
-        fetch('http://localhost:3002/api/agriculture/advisories')
+        fetch(agricultureApi.advisories)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {

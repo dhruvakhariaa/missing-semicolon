@@ -62,7 +62,7 @@ export default function DashboardPage() {
 
     useEffect(() => {
         if (farmerId) {
-            fetch(`http://localhost:3000/api/agriculture/farmers/${farmerId}`)
+            fetch(`http://localhost:8000/api/agriculture/farmers/${farmerId}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -76,7 +76,7 @@ export default function DashboardPage() {
 
     const updateParcel = async (parcelId: string, updates: any) => {
         try {
-            const res = await fetch(`http://localhost:3000/api/agriculture/farmers/${farmerId}/land/${parcelId}`, {
+            const res = await fetch(`http://localhost:8000/api/agriculture/farmers/${farmerId}/land/${parcelId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updates)
@@ -121,7 +121,7 @@ export default function DashboardPage() {
     useEffect(() => {
         const id = localStorage.getItem('farmerId') || '65a000000000000000000001';
         setFarmerId(id);
-        fetch(`http://localhost:3000/api/agriculture/farmers/${id}`)
+        fetch(`http://localhost:8000/api/agriculture/farmers/${id}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -137,8 +137,8 @@ export default function DashboardPage() {
                     { _id: '2', surveyNumber: '44/B', area: 1.8, village: 'Rampur', irrigationType: 'Rainfed', currentCrop: 'Rice', sowingDate: '2023-08-15' }
                 ]);
             });
-        fetch(`http://localhost:3000/api/agriculture/schemes`).then(res => res.json()).then(data => data.success && setSchemes(data.data));
-        fetch(`http://localhost:3000/api/agriculture/weather?location=Paithan`)
+        fetch(`http://localhost:8000/api/agriculture/schemes`).then(res => res.json()).then(data => data.success && setSchemes(data.data));
+        fetch(`http://localhost:8000/api/agriculture/weather?location=Paithan`)
             .then(res => res.json()).then(data => data.success && setWeather(data.data.forecast))
             .catch(() => {
                 setWeather([
@@ -151,7 +151,7 @@ export default function DashboardPage() {
     const handleAddParcel = async () => {
         if (!farmerId) return;
         try {
-            const res = await fetch(`http://localhost:3000/api/agriculture/farmers/${farmerId}/land`, {
+            const res = await fetch(`http://localhost:8000/api/agriculture/farmers/${farmerId}/land`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newParcel)
@@ -159,7 +159,7 @@ export default function DashboardPage() {
             const data = await res.json();
             if (data.success) {
                 if (Array.isArray(data.data)) { setParcels(data.data); } else if (data.data && data.data.landParcels) { setParcels(data.data.landParcels); } else {
-                    const refreshRes = await fetch(`http://localhost:3000/api/agriculture/farmers/${farmerId}`);
+                    const refreshRes = await fetch(`http://localhost:8000/api/agriculture/farmers/${farmerId}`);
                     const refreshData = await refreshRes.json();
                     if (refreshData.success) setParcels(refreshData.data.landParcels);
                 }

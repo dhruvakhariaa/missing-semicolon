@@ -25,13 +25,18 @@ app.use(morgan('combined', { stream: { write: message => logger.info(message.tri
 // Routes
 app.use('/api/urban', apiRoutes);
 
+// Health Check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'UP', service: 'Urban Service' });
+});
+
 // Error Handling Middleware
 app.use((err, req, res, next) => {
     logger.error(err.stack);
     res.status(500).json({ success: false, error: 'Server Error' });
 });
 
-const PORT = process.env.PORT || 5003; // Default to 5003 for Urban Service as per typical microservice port assignment
+const PORT = process.env.PORT || 3003;
 
 const server = app.listen(PORT, () => {
     logger.info(`Urban Service running on port ${PORT}`);

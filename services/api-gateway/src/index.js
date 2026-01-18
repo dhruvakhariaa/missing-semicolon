@@ -33,6 +33,8 @@ const authRoutes = require('./routes/auth');
 const proxyRoutes = require('./routes/proxy');
 const registryRoutes = require('./routes/registry');
 const healthRoutes = require('./routes/health');
+const uploadRoutes = require('./routes/upload');
+const requestRoutes = require('./routes/requests');
 
 // Services
 const ServiceRegistry = require('./services/ServiceRegistry');
@@ -51,7 +53,16 @@ app.use(helmet());
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000'];
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true
 }));
 
@@ -78,6 +89,12 @@ app.use('/api/auth', authRoutes);
 
 // Service registry management
 app.use('/api/registry', registryRoutes);
+
+// File upload (presigned URLs)
+app.use('/api/upload', uploadRoutes);
+
+// Pending requests (Sector Manager -> Gov Official workflow)
+app.use('/api/requests', requestRoutes);
 
 // Proxy all service requests
 app.use('/api', proxyRoutes);

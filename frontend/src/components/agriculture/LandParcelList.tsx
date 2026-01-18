@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { agricultureApi } from '@/config/api';
 
 interface LandParcel {
     _id?: string;
@@ -27,7 +28,7 @@ export function LandParcelList({ farmerId }: { farmerId: string }) {
 
     const fetchParcels = async () => {
         try {
-            const res = await fetch(`http://localhost:3002/api/agriculture/farmers/${farmerId}`);
+            const res = await fetch(`${agricultureApi.farmers}/${farmerId}`);
             const data = await res.json();
             if (data.success) {
                 setParcels(data.data.landParcels || []);
@@ -45,7 +46,7 @@ export function LandParcelList({ farmerId }: { farmerId: string }) {
 
     const handleAddParcel = async () => {
         try {
-            const res = await fetch(`http://localhost:3002/api/agriculture/farmers/${farmerId}/land`, {
+            const res = await fetch(`${agricultureApi.farmers}/${farmerId}/land`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newParcel)

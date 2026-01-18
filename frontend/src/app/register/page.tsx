@@ -7,7 +7,7 @@ import { useAuth, RegisterData } from '@/context/AuthContext'
 import { User, Mail, Phone, Lock, Eye, EyeOff, CreditCard, ArrowRight } from 'lucide-react'
 
 export default function RegisterPage() {
-    const [formData, setFormData] = useState<RegisterData & { confirmPassword: string }>({
+    const [formData, setFormData] = useState({
         name: '',
         email: '',
         phone: '',
@@ -61,12 +61,10 @@ export default function RegisterPage() {
         }
 
         const result = await register({
-            name: formData.name,
+            fullName: formData.name,
             email: formData.email,
             phone: formData.phone,
             password: formData.password,
-            aadhar: formData.aadhar || undefined,
-            pan: formData.pan || undefined,
         })
 
         if (result.success) {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { urbanApi } from '@/config/api';
 
 interface ServiceRequest {
     _id: string;
@@ -15,7 +16,7 @@ export default function ServiceRequestList() {
 
     const fetchRequests = async () => {
         try {
-            const res = await fetch('http://localhost:5003/api/urban/service-requests', { cache: 'no-store' });
+            const res = await fetch(urbanApi.serviceRequests, { cache: 'no-store' });
             const data = await res.json();
             if (data.success) {
                 setRequests(data.data);
@@ -53,8 +54,8 @@ export default function ServiceRequestList() {
                     <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-3">
                             <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full ${req.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                                    req.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
-                                        'bg-blue-100 text-blue-700'
+                                req.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-blue-100 text-blue-700'
                                 }`}>
                                 {req.status}
                             </span>

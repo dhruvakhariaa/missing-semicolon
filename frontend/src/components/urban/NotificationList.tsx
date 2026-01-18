@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Bell, AlertCircle, CheckCircle, Info } from 'lucide-react';
+import { Bell, CheckCircle, Info, AlertTriangle, AlertCircle, X } from 'lucide-react';
+import { urbanApi } from '@/config/api';
 
 interface Notification {
     _id: string;
@@ -18,7 +19,7 @@ export default function NotificationList() {
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
-                const res = await fetch('http://localhost:5003/api/urban/notifications');
+                const res = await fetch(urbanApi.notifications);
                 const data = await res.json();
                 if (data.success) {
                     setNotifications(data.data);

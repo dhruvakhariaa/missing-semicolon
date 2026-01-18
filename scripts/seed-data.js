@@ -164,6 +164,206 @@ const notificationsData = [
 ];
 
 // ============================================
+// AGRICULTURE SERVICE DATA & MODELS
+// ============================================
+let Farmer, Scheme, Advisory;
+try {
+    Farmer = require('../services/agriculture/src/models/Farmer');
+    Scheme = require('../services/agriculture/src/models/Scheme');
+    Advisory = require('../services/agriculture/src/models/Advisory');
+} catch (e) {
+    console.log('⚠️  Agriculture models not found, skipping agriculture seed');
+}
+
+const farmersData = [
+    {
+        name: 'Ramesh Patil',
+        phone: '9876000001',
+        aadharNumber: '1234-5678-9001',
+        village: 'Khandala',
+        taluka: 'Maval',
+        district: 'Pune',
+        state: 'Maharashtra',
+        landParcels: [
+            {
+                surveyNumber: 'S-123/A',
+                area: 5.5,
+                village: 'Khandala',
+                irrigationType: 'Drip',
+                currentCrop: 'Wheat',
+                sowingDate: new Date('2024-11-01'),
+                soilDetails: { ph: 6.8, nitrogen: 280, phosphorus: 25, potassium: 210, organicCarbon: 0.75, lastTested: new Date('2024-10-15') }
+            },
+            {
+                surveyNumber: 'S-123/B',
+                area: 3.2,
+                village: 'Khandala',
+                irrigationType: 'Rainfed',
+                currentCrop: 'Jowar',
+                sowingDate: new Date('2024-06-20')
+            }
+        ],
+        enrolledSchemes: [
+            { schemeName: 'PM-KISAN', status: 'Approved', applicationId: 'PMK-2024-00123', category: 'Direct Benefit', landArea: 8.7, bankAccount: 'XXXX-1234' }
+        ]
+    },
+    {
+        name: 'Sunita Deshmukh',
+        phone: '9876000002',
+        aadharNumber: '2345-6789-0012',
+        village: 'Lonavala',
+        taluka: 'Maval',
+        district: 'Pune',
+        state: 'Maharashtra',
+        landParcels: [
+            {
+                surveyNumber: 'S-456/A',
+                area: 4.0,
+                village: 'Lonavala',
+                irrigationType: 'Sprinkler',
+                currentCrop: 'Rice',
+                sowingDate: new Date('2024-07-01')
+            }
+        ],
+        enrolledSchemes: [
+            { schemeName: 'Crop Insurance', status: 'Applied', applicationId: 'CIS-2024-00456', category: 'Insurance', landArea: 4.0 }
+        ]
+    },
+    {
+        name: 'Ganesh Jadhav',
+        phone: '9876000003',
+        aadharNumber: '3456-7890-1234',
+        village: 'Satara',
+        taluka: 'Satara',
+        district: 'Satara',
+        state: 'Maharashtra',
+        landParcels: [
+            {
+                surveyNumber: 'S-789/A',
+                area: 12.0,
+                village: 'Satara',
+                irrigationType: 'Irrigated',
+                currentCrop: 'Sugarcane',
+                sowingDate: new Date('2024-02-15')
+            },
+            {
+                surveyNumber: 'S-789/B',
+                area: 8.0,
+                village: 'Satara',
+                irrigationType: 'Drip',
+                currentCrop: 'Grapes',
+                sowingDate: new Date('2023-06-01')
+            }
+        ],
+        enrolledSchemes: [
+            { schemeName: 'PM-KISAN', status: 'Approved', applicationId: 'PMK-2024-00789', category: 'Direct Benefit', landArea: 20.0, bankAccount: 'XXXX-5678' },
+            { schemeName: 'Drip Irrigation Subsidy', status: 'Approved', applicationId: 'DIS-2024-00123', category: 'Subsidy', landArea: 8.0 }
+        ]
+    },
+    {
+        name: 'Laxmi Bhosale',
+        phone: '9876000004',
+        aadharNumber: '4567-8901-2345',
+        village: 'Nashik',
+        taluka: 'Nashik',
+        district: 'Nashik',
+        state: 'Maharashtra',
+        landParcels: [
+            {
+                surveyNumber: 'S-101/A',
+                area: 6.5,
+                village: 'Nashik',
+                irrigationType: 'Drip',
+                currentCrop: 'Onion',
+                sowingDate: new Date('2024-10-01'),
+                soilDetails: { ph: 7.2, nitrogen: 320, phosphorus: 30, potassium: 250, organicCarbon: 0.85, lastTested: new Date('2024-09-20') }
+            }
+        ]
+    }
+];
+
+const schemesData = [
+    {
+        name: 'PM-KISAN (Pradhan Mantri Kisan Samman Nidhi)',
+        description: 'Direct income support of ₹6000 per year to all landholding farmer families in three equal installments',
+        eligibility: 'All landholding farmer families with cultivable land',
+        benefits: '₹2000 per installment, 3 times a year, directly transferred to bank account',
+        isActive: true
+    },
+    {
+        name: 'Pradhan Mantri Fasal Bima Yojana (PMFBY)',
+        description: 'Crop insurance scheme providing financial support to farmers in case of crop failure',
+        eligibility: 'All farmers growing notified crops in notified areas',
+        benefits: 'Insurance coverage for crop loss due to natural calamities, pests, and diseases',
+        isActive: true
+    },
+    {
+        name: 'Soil Health Card Scheme',
+        description: 'Provides soil health cards to farmers for nutrient management and improving soil fertility',
+        eligibility: 'All farmers',
+        benefits: 'Free soil testing, health card with fertilizer recommendations, improved yield',
+        isActive: true
+    },
+    {
+        name: 'Kisan Credit Card (KCC)',
+        description: 'Credit facility for farmers to meet agricultural and allied activities expenses',
+        eligibility: 'Farmers, fishermen, and animal husbandry farmers',
+        benefits: 'Low interest loans up to ₹3 lakh at 4% interest with timely repayment',
+        isActive: true
+    },
+    {
+        name: 'Drip Irrigation Subsidy Scheme',
+        description: 'Subsidy for installing drip irrigation systems to promote water conservation',
+        eligibility: 'Farmers with land parcels suitable for drip irrigation',
+        benefits: '50-90% subsidy on drip irrigation equipment based on category',
+        isActive: true
+    }
+];
+
+const advisoriesData = [
+    {
+        crop: 'Wheat',
+        stage: 'Tillering',
+        advice: 'Apply first dose of nitrogen (urea @50kg/acre). Monitor for aphid infestation. Ensure adequate soil moisture.',
+        type: 'Fertilizer',
+        validFrom: new Date(),
+        validUntil: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+    },
+    {
+        crop: 'Rice',
+        stage: 'Panicle Initiation',
+        advice: 'Apply second split of nitrogen. Maintain 5cm water level in field. Watch for stem borer.',
+        type: 'Fertilizer',
+        validFrom: new Date(),
+        validUntil: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000)
+    },
+    {
+        crop: 'Cotton',
+        stage: 'Flowering',
+        advice: 'Heavy rainfall expected next week. Postpone pesticide application. Ensure proper drainage.',
+        type: 'Weather',
+        validFrom: new Date(),
+        validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    },
+    {
+        crop: 'Onion',
+        stage: 'Bulb Formation',
+        advice: 'Purple blotch disease alert. Spray Mancozeb @2.5g/litre at 10-day intervals. Reduce irrigation frequency.',
+        type: 'Disease',
+        validFrom: new Date(),
+        validUntil: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000)
+    },
+    {
+        crop: 'Sugarcane',
+        stage: 'Grand Growth',
+        advice: 'Apply potash fertilizer for improved sucrose content. Maintain regular irrigation. Earthing up recommended.',
+        type: 'Fertilizer',
+        validFrom: new Date(),
+        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    }
+];
+
+// ============================================
 // SEED FUNCTIONS
 // ============================================
 
@@ -269,6 +469,45 @@ async function seedUrban() {
     };
 }
 
+async function seedAgriculture() {
+    if (!Farmer || !Scheme || !Advisory) {
+        console.log('⏭️  Skipping Agriculture: Models not available');
+        return { farmers: 0, schemes: 0, advisories: 0 };
+    }
+
+    const AGRICULTURE_URI = process.env.AGRICULTURE_MONGO_URI || 'mongodb://localhost:27017/sdp_agriculture';
+
+    console.log('\n🌾 Seeding Agriculture Service...');
+    const conn = await mongoose.createConnection(AGRICULTURE_URI);
+
+    // Register models on this connection
+    const FarmerModel = conn.model('Farmer', Farmer.schema);
+    const SchemeModel = conn.model('Scheme', Scheme.schema);
+    const AdvisoryModel = conn.model('Advisory', Advisory.schema);
+
+    // Clear existing data
+    await FarmerModel.deleteMany({});
+    await SchemeModel.deleteMany({});
+    await AdvisoryModel.deleteMany({});
+
+    // Seed data
+    const createdFarmers = await FarmerModel.insertMany(farmersData);
+    console.log(`   ✅ Created ${createdFarmers.length} farmers`);
+
+    const createdSchemes = await SchemeModel.insertMany(schemesData);
+    console.log(`   ✅ Created ${createdSchemes.length} schemes`);
+
+    const createdAdvisories = await AdvisoryModel.insertMany(advisoriesData);
+    console.log(`   ✅ Created ${createdAdvisories.length} advisories`);
+
+    await conn.close();
+    return {
+        farmers: createdFarmers.length,
+        schemes: createdSchemes.length,
+        advisories: createdAdvisories.length
+    };
+}
+
 // ============================================
 // MAIN EXECUTION
 // ============================================
@@ -279,10 +518,13 @@ async function main() {
 
     console.log('🌱 Service Delivery Platform - Database Seeder');
     console.log('================================================');
+    console.log('Usage: node scripts/seed-data.js [service]');
+    console.log('  Services: healthcare, urban, agriculture, or leave empty for all\n');
 
     try {
         let healthcareResults = { departments: 0, doctors: 0 };
         let urbanResults = { complaints: 0, requests: 0, notifications: 0 };
+        let agricultureResults = { farmers: 0, schemes: 0, advisories: 0 };
 
         if (!service || service === 'healthcare') {
             healthcareResults = await seedHealthcare();
@@ -292,15 +534,25 @@ async function main() {
             urbanResults = await seedUrban();
         }
 
+        if (!service || service === 'agriculture') {
+            agricultureResults = await seedAgriculture();
+        }
+
         console.log('\n🎉 Seed completed successfully!');
         console.log('================================');
         if (healthcareResults.departments > 0) {
-            console.log(`Healthcare: ${healthcareResults.departments} departments, ${healthcareResults.doctors} doctors`);
+            console.log(`🏥 Healthcare: ${healthcareResults.departments} departments, ${healthcareResults.doctors} doctors`);
         }
         if (urbanResults.complaints > 0) {
-            console.log(`Urban: ${urbanResults.complaints} complaints, ${urbanResults.requests} requests, ${urbanResults.notifications} notifications`);
+            console.log(`🏙️  Urban: ${urbanResults.complaints} complaints, ${urbanResults.requests} requests, ${urbanResults.notifications} notifications`);
+        }
+        if (agricultureResults.farmers > 0) {
+            console.log(`🌾 Agriculture: ${agricultureResults.farmers} farmers, ${agricultureResults.schemes} schemes, ${agricultureResults.advisories} advisories`);
         }
         console.log('================================');
+        console.log('\n📊 View your data in MongoDB Compass:');
+        console.log('   Connect to: mongodb://localhost:27017');
+        console.log('   Databases: sdp_healthcare, sdp_urban, sdp_agriculture');
 
         process.exit(0);
     } catch (error) {
@@ -310,3 +562,4 @@ async function main() {
 }
 
 main();
+

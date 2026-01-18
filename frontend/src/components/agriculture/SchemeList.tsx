@@ -1,20 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { agricultureApi } from '@/config/api';
 
 export function SchemeList() {
     const [schemes, setSchemes] = useState<any[]>([]);
 
     useEffect(() => {
-        fetch('http://localhost:3002/api/agriculture/schemes')
-            .then(res => res.json())
+        const url = 'http://localhost:8000/api/agriculture/schemes'; // DIRECT HARDCODED URL
+        console.log('Fetching schemes from:', url);
+        fetch(url)
+            .then(res => {
+                console.log('Response status:', res.status);
+                return res.json();
+            })
             .then(data => data.success && setSchemes(data.data))
-            .catch(console.error);
+            .catch(err => console.error('Fetch error:', err));
     }, []);
 
     return (
         <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Government Schemes</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Government Schemes (DEBUG MODE)</h3>
             <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
                 {schemes.map((scheme, idx) => (
                     <div key={idx} className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
