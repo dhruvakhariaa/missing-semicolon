@@ -57,7 +57,7 @@ data/redis/
 data/rabbitmq/
 
 # Lock files (keep one based on package manager choice)
-# package-lock.json
+package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
 

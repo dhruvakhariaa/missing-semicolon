@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FileText, ClipboardList, Bell, MapPin, CheckCircle, Clock, AlertCircle, ArrowRight, Play, Check, XCircle, Megaphone, Building2, Phone, MessageSquare, Droplets, Zap, Construction, Trash2, Leaf, HelpCircle, ChevronRight } from 'lucide-react';
+import DashboardFooter from '@/components/common/DashboardFooter';
 import ComplaintForm from '@/components/urban/ComplaintForm';
 import NotificationList from '@/components/urban/NotificationList';
 
@@ -133,7 +134,7 @@ export default function UrbanPage() {
     // Fetch complaints
     const fetchComplaints = async () => {
         try {
-            const res = await fetch('http://localhost:5003/api/urban/complaints', { cache: 'no-store' });
+            const res = await fetch('http://localhost:3000/api/urban/complaints', { cache: 'no-store' });
             const data = await res.json();
             if (data.success) {
                 setComplaints(data.data);
@@ -159,7 +160,7 @@ export default function UrbanPage() {
     const updateComplaintStatus = async (id: string, newStatus: string) => {
         setUpdatingId(id);
         try {
-            const res = await fetch(`http://localhost:5003/api/urban/complaints/${id}`, {
+            const res = await fetch(`http://localhost:3000/api/urban/complaints/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -231,7 +232,7 @@ export default function UrbanPage() {
 
     const handleFeedbackSubmit = async () => {
         try {
-            const res = await fetch('http://localhost:5003/api/urban/feedback', {
+            const res = await fetch('http://localhost:3000/api/urban/feedback', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -678,43 +679,8 @@ export default function UrbanPage() {
                 </section>
             )}
 
-            {/* Footer */}
-            <footer className="bg-brand-700 mt-16">
-                <div className="max-w-7xl mx-auto px-6 py-12">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                        <div>
-                            <h4 className="text-white font-dm-sans font-semibold mb-4">Service Platform</h4>
-                            <p className="text-brand-200 font-inter text-sm">Empowering citizens with seamless access to government services.</p>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-dm-sans font-semibold mb-4">Quick Links</h4>
-                            <ul className="space-y-2 text-brand-200 font-inter text-sm">
-                                <li><a href="#" className="hover:text-white transition-colors">Home</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">File Complaint</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Track Status</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-dm-sans font-semibold mb-4">Support</h4>
-                            <ul className="space-y-2 text-brand-200 font-inter text-sm">
-                                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Emergency Contacts</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Feedback</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-dm-sans font-semibold mb-4">Contact</h4>
-                            <ul className="space-y-2 text-brand-200 font-inter text-sm">
-                                <li>1800-111-222 (Toll Free)</li>
-                                <li>support@gov-services.in</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="border-t border-brand-600 mt-8 pt-8 text-center text-brand-300 font-inter text-sm">
-                        2026 Government Service Delivery Platform. All rights reserved.
-                    </div>
-                </div>
-            </footer>
+            {/* Shared Footer */}
+            <DashboardFooter />
         </div>
     );
 }

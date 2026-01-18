@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import DashboardFooter from '@/components/common/DashboardFooter';
 import { LandParcelList } from '@/components/agriculture/LandParcelList';
 import { AdvisoryDashboard } from '@/components/agriculture/AdvisoryDashboard';
 
@@ -61,7 +62,7 @@ export default function DashboardPage() {
 
     useEffect(() => {
         if (farmerId) {
-            fetch(`http://localhost:3002/api/agriculture/farmers/${farmerId}`)
+            fetch(`http://localhost:3000/api/agriculture/farmers/${farmerId}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -75,7 +76,7 @@ export default function DashboardPage() {
 
     const updateParcel = async (parcelId: string, updates: any) => {
         try {
-            const res = await fetch(`http://localhost:3002/api/agriculture/farmers/${farmerId}/land/${parcelId}`, {
+            const res = await fetch(`http://localhost:3000/api/agriculture/farmers/${farmerId}/land/${parcelId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updates)
@@ -120,7 +121,7 @@ export default function DashboardPage() {
     useEffect(() => {
         const id = localStorage.getItem('farmerId') || '65a000000000000000000001';
         setFarmerId(id);
-        fetch(`http://localhost:3002/api/agriculture/farmers/${id}`)
+        fetch(`http://localhost:3000/api/agriculture/farmers/${id}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -136,8 +137,8 @@ export default function DashboardPage() {
                     { _id: '2', surveyNumber: '44/B', area: 1.8, village: 'Rampur', irrigationType: 'Rainfed', currentCrop: 'Rice', sowingDate: '2023-08-15' }
                 ]);
             });
-        fetch(`http://localhost:3002/api/agriculture/schemes`).then(res => res.json()).then(data => data.success && setSchemes(data.data));
-        fetch(`http://localhost:3002/api/agriculture/weather?location=Paithan`)
+        fetch(`http://localhost:3000/api/agriculture/schemes`).then(res => res.json()).then(data => data.success && setSchemes(data.data));
+        fetch(`http://localhost:3000/api/agriculture/weather?location=Paithan`)
             .then(res => res.json()).then(data => data.success && setWeather(data.data.forecast))
             .catch(() => {
                 setWeather([
@@ -150,7 +151,7 @@ export default function DashboardPage() {
     const handleAddParcel = async () => {
         if (!farmerId) return;
         try {
-            const res = await fetch(`http://localhost:3002/api/agriculture/farmers/${farmerId}/land`, {
+            const res = await fetch(`http://localhost:3000/api/agriculture/farmers/${farmerId}/land`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newParcel)
@@ -158,7 +159,7 @@ export default function DashboardPage() {
             const data = await res.json();
             if (data.success) {
                 if (Array.isArray(data.data)) { setParcels(data.data); } else if (data.data && data.data.landParcels) { setParcels(data.data.landParcels); } else {
-                    const refreshRes = await fetch(`http://localhost:3002/api/agriculture/farmers/${farmerId}`);
+                    const refreshRes = await fetch(`http://localhost:3000/api/agriculture/farmers/${farmerId}`);
                     const refreshData = await refreshRes.json();
                     if (refreshData.success) setParcels(refreshData.data.landParcels);
                 }
@@ -176,34 +177,9 @@ export default function DashboardPage() {
     const farmerCrops = Array.from(new Set(parcels.map(p => p.currentCrop).filter(Boolean)));
 
     return (
-        <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-            {/* Global Header */}
-            <header className="bg-white sticky top-0 z-50 shadow-sm">
-                <div className="container mx-auto px-4 h-20 flex items-center justify-between">
-                    {/* Logo Section */}
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 flex items-center justify-center overflow-hidden">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="/emblem.jpg" alt="Emblem" className="h-full w-full object-contain mix-blend-multiply" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="font-bold text-lg leading-none tracking-tight">Service Delivery Platform</span>
-                            <span className="text-xs text-gray-500 font-medium tracking-wide">Government of India</span>
-                        </div>
-                    </div>
-
-                    {/* Navigation Links - Wireframe Style */}
-                    <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-gray-600">
-                        <a href="#" className="hover:text-sky-800 transition-colors">Healthcare</a>
-                        <a href="#" className="text-sky-900 border-b-2 border-sky-900 pb-1">Agriculture</a>
-                        <a href="#" className="hover:text-sky-800 transition-colors">Urban Development</a>
-                    </nav>
-                </div>
-            </header>
-
+        <div className="min-h-screen bg-brand-50 text-gray-900 font-sans">
             {/* Hero Section */}
-            {/* Hero Section - Healthcare Style Card */}
-            <div className="container mx-auto px-4 mt-8">
+            <section className="max-w-7xl mx-auto px-6 pt-6">
                 <div className="rounded-3xl bg-gradient-to-r from-sky-900 to-blue-600 p-8 md:p-16 text-white shadow-xl relative overflow-hidden">
                     {/* Decorative Circle */}
                     <div className="absolute top-0 right-0 -mr-20 -mt-20 h-96 w-96 rounded-full bg-white/10 blur-3xl"></div>
@@ -213,20 +189,22 @@ export default function DashboardPage() {
                             <span className="w-2 h-2 rounded-full bg-green-400"></span>
                             PM-KISAN Enabled
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-                            Smart Agriculture Management<br />
-                            For Every Farmer
+                        <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                            Smart Agriculture Management
                         </h1>
-                        <p className="text-lg md:text-xl text-blue-100 mb-8 leading-relaxed max-w-xl">
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-dm-sans font-bold text-brand-200 mb-6">
+                            For Every Farmer
+                        </h2>
+                        <p className="text-base sm:text-lg text-brand-100 font-inter max-w-xl mb-8">
                             Access land records, crop advisories, and direct benefit transfers seamlessly on India's unified platform.
                         </p>
 
                     </div>
                 </div>
-            </div>
+            </section>
 
             {/* Main Tabs */}
-            <div className="container mx-auto px-4 py-8">
+            <div className="max-w-7xl mx-auto px-6 py-8">
                 <Tabs defaultValue="land" className="space-y-8">
                     <div className="">
                         <TabsList className="w-full justify-start h-auto p-0 bg-transparent gap-8 border-b border-gray-200">
@@ -569,489 +547,504 @@ export default function DashboardPage() {
 
             {/* Modals */}
             {/* Add Parcel Modal */}
-            {isAddParcelOpen && (
-                <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg p-6 max-w-md w-full text-gray-900 shadow-xl">
-                        <h3 className="text-xl font-bold mb-4">Add New Land Parcel</h3>
-                        <div className="grid gap-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Survey No.</label>
-                                    <input
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                                        value={newParcel.surveyNumber}
-                                        onChange={e => setNewParcel({ ...newParcel, surveyNumber: e.target.value })}
-                                        placeholder="e.g. 102/A"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Area (Acres)</label>
-                                    <input
-                                        type="number"
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                                        value={newParcel.area}
-                                        onChange={e => setNewParcel({ ...newParcel, area: e.target.value })}
-                                        placeholder="0.0"
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Village</label>
-                                <input
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                                    value={newParcel.village}
-                                    onChange={e => setNewParcel({ ...newParcel, village: e.target.value })}
-                                    placeholder="Village Name"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Current Crop</label>
-                                <input
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                                    value={newParcel.currentCrop}
-                                    onChange={e => setNewParcel({ ...newParcel, currentCrop: e.target.value })}
-                                    placeholder="e.g. Wheat, Cotton"
-                                />
-                            </div>
-                            <div className="flex justify-end gap-3 mt-4">
-                                <button
-                                    onClick={() => setIsAddParcelOpen(false)}
-                                    className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 text-gray-700 font-medium"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleAddParcel}
-                                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-medium"
-                                >
-                                    Save Parcel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {/* Edit Parcel Modal */}
-            {isEditParcelOpen && selectedParcel && (
-                <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg p-6 max-w-sm w-full text-gray-900 shadow-xl">
-                        <h3 className="text-lg font-bold mb-4">Edit Parcel Details</h3>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-sm font-medium">Sown Date</label>
-                                <input
-                                    type="date"
-                                    className="w-full border border-gray-300 rounded px-3 py-2 mt-1"
-                                    value={editSowingDate}
-                                    onChange={(e) => setEditSowingDate(e.target.value)}
-                                />
-                            </div>
-                            <div className="flex justify-end gap-2 mt-4">
-                                <Button size="sm" variant="outline" onClick={() => setIsEditParcelOpen(false)}>Cancel</Button>
-                                <Button
-                                    size="sm"
-                                    className="bg-green-600 text-white"
-                                    onClick={async () => {
-                                        await updateParcel(selectedParcel._id, {
-                                            sowingDate: editSowingDate || null
-                                        });
-                                        setIsEditParcelOpen(false);
-                                    }}
-                                >
-                                    Save Changes
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Soil Card Modal */}
-            {isSoilCardOpen && selectedParcel && (
-                <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg p-6 max-w-md w-full text-gray-900 shadow-xl">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-bold">Soil Health Card</h3>
-                            {!editingSoil && <div className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Healthy</div>}
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-gray-50 p-3 rounded text-center">
-                                    <p className="text-xs text-gray-500">pH Level</p>
-                                    {editingSoil ? (
-                                        <input className="w-full text-center border rounded mt-1" value={soilForm.ph} onChange={e => setSoilForm({ ...soilForm, ph: e.target.value })} />
-                                    ) : (
-                                        <p className="text-xl font-bold text-gray-900">{selectedParcel.soilDetails?.ph || '6.5'}</p>
-                                    )}
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded text-center">
-                                    <p className="text-xs text-gray-500">Organic Carbon</p>
-                                    {editingSoil ? (
-                                        <input className="w-full text-center border rounded mt-1" value={soilForm.organicCarbon} onChange={e => setSoilForm({ ...soilForm, organicCarbon: e.target.value })} />
-                                    ) : (
-                                        <p className="text-xl font-bold text-gray-900">{selectedParcel.soilDetails?.organicCarbon || '0.75'}%</p>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div>
-                                <h4 className="font-semibold text-sm mb-2">Nutrient Status (Kg/Ha)</h4>
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between items-center">
-                                        <span>Nitrogen (N)</span>
-                                        {editingSoil ? (
-                                            <input className="w-20 text-center border rounded" value={soilForm.nitrogen} onChange={e => setSoilForm({ ...soilForm, nitrogen: e.target.value })} />
-                                        ) : (
-                                            <span className="font-medium">{selectedParcel.soilDetails?.nitrogen || '240'} (Low)</span>
-                                        )}
-                                    </div>
-                                    <Progress value={40} className="h-1.5" />
-                                    <div className="flex justify-between items-center">
-                                        <span>Phosphorus (P)</span>
-                                        {editingSoil ? (
-                                            <input className="w-20 text-center border rounded" value={soilForm.phosphorus} onChange={e => setSoilForm({ ...soilForm, phosphorus: e.target.value })} />
-                                        ) : (
-                                            <span className="font-medium">{selectedParcel.soilDetails?.phosphorus || '18'} (Medium)</span>
-                                        )}
-                                    </div>
-                                    <Progress value={60} className="h-1.5" />
-                                </div>
-                            </div>
-
-                            {!editingSoil && (
-                                <div className="bg-blue-50 p-3 rounded">
-                                    <h4 className="font-semibold text-blue-900 text-sm mb-1">Recommendation</h4>
-                                    <p className="text-xs text-blue-800">Apply 40kg Urea per acre as top dressing. Consult local agricultural officer for micro-nutrient mix.</p>
-                                </div>
-                            )}
-
-                            <div className="flex justify-end gap-2 mt-4">
-                                {editingSoil ? (
-                                    <>
-                                        <Button variant="outline" size="sm" onClick={() => setEditingSoil(false)}>Cancel</Button>
-                                        <Button size="sm" className="bg-green-600 text-white" onClick={async () => {
-                                            await updateParcel(selectedParcel._id, {
-                                                soilDetails: {
-                                                    ph: Number(soilForm.ph),
-                                                    nitrogen: Number(soilForm.nitrogen),
-                                                    phosphorus: Number(soilForm.phosphorus),
-                                                    organicCarbon: Number(soilForm.organicCarbon)
-                                                }
-                                            });
-                                            setEditingSoil(false);
-                                        }}>Save Changes</Button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Button variant="outline" size="sm" onClick={() => setIsSoilCardOpen(false)}>Close</Button>
-                                        <Button size="sm" className="bg-green-600 text-white" onClick={() => setEditingSoil(true)}>Update Data</Button>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Irrigation Modal */}
-            {isIrrigationModalOpen && selectedParcel && (
-                <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg p-6 max-w-sm w-full text-gray-900 shadow-xl">
-                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                            <Droplets className="h-5 w-5 text-blue-500" />
-                            Irrigation Schedule
-                        </h3>
-
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center border-b pb-2">
-                                <span className="text-gray-600">Last Irrigated</span>
-                                <span className="font-medium">{selectedParcel.lastIrrigationDate ? new Date(selectedParcel.lastIrrigationDate).toLocaleDateString() : 'Not recorded'}</span>
-                            </div>
-
-                            <div className="bg-blue-50 p-4 rounded text-center">
-                                <p className="text-sm text-blue-800 mb-1">Next Irrigation Due</p>
-                                <p className="text-2xl font-bold text-blue-900">
-                                    {selectedParcel.lastIrrigationDate
-                                        ? new Date(new Date(selectedParcel.lastIrrigationDate).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()
-                                        : 'Today'}
-                                </p>
-                                <p className="text-xs text-blue-600 mt-1">Based on current weather and crop stage</p>
-                            </div>
-
-                            <div className="pt-2">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Update Status</label>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="date"
-                                        className="border border-gray-300 rounded px-3 py-2 w-full text-sm"
-                                        value={irrigationDateInput}
-                                        onChange={(e) => setIrrigationDateInput(e.target.value)}
-                                    />
-                                    <Button
-                                        className="bg-blue-600 hover:bg-blue-700 text-white shrink-0"
-                                        onClick={() => {
-                                            if (!irrigationDateInput) return;
-                                            updateParcel(selectedParcel._id, {
-                                                lastIrrigationDate: new Date(irrigationDateInput).toISOString(),
-                                                irrigationType: 'Irrigated' // Auto-update status to Irrigated
-                                            });
-                                            setIsIrrigationModalOpen(false);
-                                        }}
-                                    >
-                                        Save & Update Status
-                                    </Button>
-                                </div>
-                            </div>
-                            <Button variant="ghost" className="w-full text-gray-500" onClick={() => setIsIrrigationModalOpen(false)}>Close</Button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Eligibility Modal */}
-            {isEligibilityModalOpen && selectedScheme && (
-                <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg p-6 max-w-lg w-full text-gray-900 shadow-xl border-t-4 border-blue-600">
-                        {(() => {
-                            const status = checkEligibility(selectedScheme);
-                            return (
-                                <>
-                                    <div className="flex justify-between items-start mb-6">
-                                        <div>
-                                            <h3 className="text-2xl font-bold text-gray-900">{selectedScheme.name}</h3>
-                                            <p className="text-gray-500 text-sm mt-1">Scheme ID: #SCH-{Math.floor(Math.random() * 1000)}</p>
-                                        </div>
-                                        <Badge className={`border-none px-3 py-1 ${status.qualified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                            {status.qualified ? 'You are Eligible' : 'Not Eligible'}
-                                        </Badge>
-                                    </div>
-
-                                    <div className="space-y-6">
-                                        {!status.qualified && (
-                                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
-                                                <AlertTriangle className="h-5 w-5 text-red-600 shrink-0" />
-                                                <div>
-                                                    <h4 className="font-semibold text-red-900 text-sm">Eligibility Check Failed</h4>
-                                                    <p className="text-red-700 text-sm mt-1">{status.reason}</p>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {status.qualified && (
-                                            <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex gap-3">
-                                                <Leaf className="h-5 w-5 text-green-600 shrink-0" />
-                                                <div>
-                                                    <h4 className="font-semibold text-green-900 text-sm">Eligibility Confirmed</h4>
-                                                    <p className="text-green-700 text-sm mt-1">{status.reason}</p>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                                            <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                                                <Leaf className="h-4 w-4 text-green-600" />
-                                                Benefits
-                                            </h4>
-                                            <p className="text-gray-700">{selectedScheme.desc || selectedScheme.description}</p>
-                                            <div className="mt-3 pt-3 border-t border-gray-200">
-                                                <p className="font-bold text-lg text-blue-700">{selectedScheme.benefits}</p>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <h4 className="font-semibold text-gray-900 mb-3">Eligibility Criteria</h4>
-                                            <ul className="space-y-2">
-                                                <li className="flex items-start gap-2 text-sm text-gray-600">
-                                                    <div className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
-                                                    {selectedScheme.eligibility}
-                                                </li>
-                                                <li className="flex items-start gap-2 text-sm text-gray-600">
-                                                    <div className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
-                                                    Click to view full documentation requirements.
-                                                </li>
-                                            </ul>
-                                        </div>
-
-                                        <div className="flex flex-col gap-3">
-                                            {enrolledSchemes.some(s => s.schemeName === selectedScheme.name) ? (
-                                                <Button className="w-full h-12 text-lg bg-green-600 hover:bg-green-700 text-white" disabled>
-                                                    Already Applied
-                                                </Button>
-                                            ) : (
-                                                <Button
-                                                    disabled={!status.qualified}
-                                                    className={`w-full h-12 text-lg text-white ${status.qualified ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
-                                                    onClick={() => {
-                                                        setIsEligibilityModalOpen(false);
-                                                        setIsApplicationFormOpen(true);
-                                                    }}
-                                                >
-                                                    {status.qualified ? 'Apply Now' : 'Not Eligible to Apply'}
-                                                </Button>
-                                            )}
-                                            <Button variant="ghost" className="w-full text-gray-500" onClick={() => setIsEligibilityModalOpen(false)}>
-                                                Close
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </>
-                            );
-                        })()}
-                    </div>
-                </div>
-            )}
-            {/* Application Form Modal */}
-            {isApplicationFormOpen && selectedScheme && (
-                <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl p-0 max-w-2xl w-full text-gray-900 shadow-xl max-h-[90vh] overflow-y-auto">
-                        <div className="bg-blue-600 p-6 text-white rounded-t-xl">
-                            <h3 className="text-xl font-bold">Apply for {selectedScheme.name}</h3>
-                            <p className="text-blue-100 text-sm opacity-90">Please verify your details before submitting</p>
-                        </div>
-
-                        <div className="p-6 space-y-6">
-                            {/* Section 1: Land Details */}
-                            <div className="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
-                                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                                    <Tractor className="h-4 w-4 text-blue-600" />
-                                    1. Land Details (Auto-fetched)
-                                </h4>
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div className="bg-white p-3 rounded border border-gray-100">
-                                        <span className="text-gray-500 block text-xs mb-1">Total Land Area</span>
-                                        <span className="font-bold text-gray-900 text-lg">
-                                            {parcels.reduce((sum, p) => sum + (Number(p.area) || 0), 0).toFixed(1)} Acres
-                                        </span>
-                                    </div>
-                                    <div className="bg-white p-3 rounded border border-gray-100">
-                                        <span className="text-gray-500 block text-xs mb-1">Active Crops Link</span>
-                                        <span className="font-medium text-gray-900">
-                                            {parcels.map(p => p.currentCrop).filter(Boolean).join(', ') || 'No active crops'}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Section 2: Farmer Category */}
-                            <div>
-                                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                                    <Leaf className="h-4 w-4 text-green-600" />
-                                    2. Farmer Category
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    {['Small (< 2ha / 5 acres)', 'Medium (2-10ha / 5-25 acres)', 'Large (> 10ha / 25 acres)'].map((cat, i) => (
-                                        <label key={i} className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${applicationForm.category === cat ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'}`}>
-                                            <input
-                                                type="radio"
-                                                name="category"
-                                                className="h-4 w-4 text-blue-600"
-                                                checked={applicationForm.category === cat}
-                                                onChange={() => setApplicationForm({ ...applicationForm, category: cat })}
-                                            />
-                                            <span className="text-sm font-medium text-gray-700">{cat}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Section 3: Personal Details (Prefilled) */}
-                            <div>
-                                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                                    <div className="h-4 w-4 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xs">i</div>
-                                    3. Personal Details (Prefilled)
-                                </h4>
+            {
+                isAddParcelOpen && (
+                    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-lg p-6 max-w-md w-full text-gray-900 shadow-xl">
+                            <h3 className="text-xl font-bold mb-4">Add New Land Parcel</h3>
+                            <div className="grid gap-4">
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Name</label>
-                                        <input type="text" className="w-full border rounded-md p-2 bg-gray-50 text-gray-700 text-sm font-medium" value={farmerProfile?.name} disabled />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Mobile</label>
-                                        <input type="text" className="w-full border rounded-md p-2 bg-gray-50 text-gray-700 text-sm font-medium" value={farmerProfile?.phone} disabled />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Village</label>
-                                        <input type="text" className="w-full border rounded-md p-2 bg-gray-50 text-gray-700 text-sm font-medium" value={farmerProfile?.village} disabled />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-gray-500 mb-1">District</label>
-                                        <input type="text" className="w-full border rounded-md p-2 bg-gray-50 text-gray-700 text-sm font-medium" value={farmerProfile?.district} disabled />
-                                    </div>
-                                    <div className="col-span-2">
-                                        <label className="block text-xs font-semibold text-gray-700 mb-1">Bank Account Number <span className="text-red-500">*</span></label>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Survey No.</label>
                                         <input
-                                            type="text"
-                                            className="w-full border rounded-md p-2 text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                            placeholder="Enter your active bank account number"
-                                            value={applicationForm.bankAccount}
-                                            onChange={(e) => setApplicationForm({ ...applicationForm, bankAccount: e.target.value })}
+                                            className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                                            value={newParcel.surveyNumber}
+                                            onChange={e => setNewParcel({ ...newParcel, surveyNumber: e.target.value })}
+                                            placeholder="e.g. 102/A"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Area (Acres)</label>
+                                        <input
+                                            type="number"
+                                            className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                                            value={newParcel.area}
+                                            onChange={e => setNewParcel({ ...newParcel, area: e.target.value })}
+                                            placeholder="0.0"
                                         />
                                     </div>
                                 </div>
-                            </div>
-
-                            {/* Declaration */}
-                            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
-                                <label className="flex items-start gap-3 cursor-pointer">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Village</label>
                                     <input
-                                        type="checkbox"
-                                        className="mt-1 h-4 w-4 text-blue-600 rounded border-gray-300"
-                                        checked={applicationForm.declaration}
-                                        onChange={(e) => setApplicationForm({ ...applicationForm, declaration: e.target.checked })}
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        value={newParcel.village}
+                                        onChange={e => setNewParcel({ ...newParcel, village: e.target.value })}
+                                        placeholder="Village Name"
                                     />
-                                    <div className="text-sm text-yellow-900">
-                                        <span className="font-bold block mb-1">Declaration</span>
-                                        I declare that I am an active farmer, the land details linked are correct, and I have not applied for duplicate benefits for this scheme.
-                                    </div>
-                                </label>
-                            </div>
-
-                            <div className="flex gap-4 pt-2">
-                                <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-11 shadow-md transition-all" onClick={async () => {
-                                    if (!applicationForm.declaration) {
-                                        alert("Please agree to the declaration before submitting.");
-                                        return;
-                                    }
-                                    if (!applicationForm.bankAccount) {
-                                        alert("Please enter a bank account number.");
-                                        return;
-                                    }
-
-                                    try {
-                                        const res = await fetch(`http://localhost:3002/api/agriculture/farmers/${farmerId}/schemes/enroll`, {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({
-                                                schemeName: selectedScheme.name,
-                                                category: applicationForm.category,
-                                                landArea: parcels.reduce((sum, p) => sum + (Number(p.area) || 0), 0),
-                                                bankAccount: applicationForm.bankAccount
-                                            })
-                                        });
-                                        const data = await res.json();
-                                        if (data.success) {
-                                            setEnrolledSchemes(data.data);
-                                            setIsApplicationFormOpen(false);
-                                            alert(`Application for ${selectedScheme.name} Submitted Successfully!`);
-                                        } else {
-                                            alert(`Submission Failed: ${data.message}`);
-                                        }
-                                    } catch (e: any) {
-                                        console.error("Submission error:", e);
-                                        alert(`Connection Error: ${e.message}. Ensure backend is running.`);
-                                    }
-                                }}>
-                                    Submit Application
-                                </Button>
-                                <Button variant="outline" className="flex-1 h-11" onClick={() => setIsApplicationFormOpen(false)}>Cancel</Button>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Current Crop</label>
+                                    <input
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        value={newParcel.currentCrop}
+                                        onChange={e => setNewParcel({ ...newParcel, currentCrop: e.target.value })}
+                                        placeholder="e.g. Wheat, Cotton"
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-3 mt-4">
+                                    <button
+                                        onClick={() => setIsAddParcelOpen(false)}
+                                        className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 text-gray-700 font-medium"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleAddParcel}
+                                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-medium"
+                                    >
+                                        Save Parcel
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
+            {/* Edit Parcel Modal */}
+            {
+                isEditParcelOpen && selectedParcel && (
+                    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-lg p-6 max-w-sm w-full text-gray-900 shadow-xl">
+                            <h3 className="text-lg font-bold mb-4">Edit Parcel Details</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium">Sown Date</label>
+                                    <input
+                                        type="date"
+                                        className="w-full border border-gray-300 rounded px-3 py-2 mt-1"
+                                        value={editSowingDate}
+                                        onChange={(e) => setEditSowingDate(e.target.value)}
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-2 mt-4">
+                                    <Button size="sm" variant="outline" onClick={() => setIsEditParcelOpen(false)}>Cancel</Button>
+                                    <Button
+                                        size="sm"
+                                        className="bg-green-600 text-white"
+                                        onClick={async () => {
+                                            await updateParcel(selectedParcel._id, {
+                                                sowingDate: editSowingDate || null
+                                            });
+                                            setIsEditParcelOpen(false);
+                                        }}
+                                    >
+                                        Save Changes
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Soil Card Modal */}
+            {
+                isSoilCardOpen && selectedParcel && (
+                    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-lg p-6 max-w-md w-full text-gray-900 shadow-xl">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-bold">Soil Health Card</h3>
+                                {!editingSoil && <div className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Healthy</div>}
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-gray-50 p-3 rounded text-center">
+                                        <p className="text-xs text-gray-500">pH Level</p>
+                                        {editingSoil ? (
+                                            <input className="w-full text-center border rounded mt-1" value={soilForm.ph} onChange={e => setSoilForm({ ...soilForm, ph: e.target.value })} />
+                                        ) : (
+                                            <p className="text-xl font-bold text-gray-900">{selectedParcel.soilDetails?.ph || '6.5'}</p>
+                                        )}
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded text-center">
+                                        <p className="text-xs text-gray-500">Organic Carbon</p>
+                                        {editingSoil ? (
+                                            <input className="w-full text-center border rounded mt-1" value={soilForm.organicCarbon} onChange={e => setSoilForm({ ...soilForm, organicCarbon: e.target.value })} />
+                                        ) : (
+                                            <p className="text-xl font-bold text-gray-900">{selectedParcel.soilDetails?.organicCarbon || '0.75'}%</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 className="font-semibold text-sm mb-2">Nutrient Status (Kg/Ha)</h4>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between items-center">
+                                            <span>Nitrogen (N)</span>
+                                            {editingSoil ? (
+                                                <input className="w-20 text-center border rounded" value={soilForm.nitrogen} onChange={e => setSoilForm({ ...soilForm, nitrogen: e.target.value })} />
+                                            ) : (
+                                                <span className="font-medium">{selectedParcel.soilDetails?.nitrogen || '240'} (Low)</span>
+                                            )}
+                                        </div>
+                                        <Progress value={40} className="h-1.5" />
+                                        <div className="flex justify-between items-center">
+                                            <span>Phosphorus (P)</span>
+                                            {editingSoil ? (
+                                                <input className="w-20 text-center border rounded" value={soilForm.phosphorus} onChange={e => setSoilForm({ ...soilForm, phosphorus: e.target.value })} />
+                                            ) : (
+                                                <span className="font-medium">{selectedParcel.soilDetails?.phosphorus || '18'} (Medium)</span>
+                                            )}
+                                        </div>
+                                        <Progress value={60} className="h-1.5" />
+                                    </div>
+                                </div>
+
+                                {!editingSoil && (
+                                    <div className="bg-blue-50 p-3 rounded">
+                                        <h4 className="font-semibold text-blue-900 text-sm mb-1">Recommendation</h4>
+                                        <p className="text-xs text-blue-800">Apply 40kg Urea per acre as top dressing. Consult local agricultural officer for micro-nutrient mix.</p>
+                                    </div>
+                                )}
+
+                                <div className="flex justify-end gap-2 mt-4">
+                                    {editingSoil ? (
+                                        <>
+                                            <Button variant="outline" size="sm" onClick={() => setEditingSoil(false)}>Cancel</Button>
+                                            <Button size="sm" className="bg-green-600 text-white" onClick={async () => {
+                                                await updateParcel(selectedParcel._id, {
+                                                    soilDetails: {
+                                                        ph: Number(soilForm.ph),
+                                                        nitrogen: Number(soilForm.nitrogen),
+                                                        phosphorus: Number(soilForm.phosphorus),
+                                                        organicCarbon: Number(soilForm.organicCarbon)
+                                                    }
+                                                });
+                                                setEditingSoil(false);
+                                            }}>Save Changes</Button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Button variant="outline" size="sm" onClick={() => setIsSoilCardOpen(false)}>Close</Button>
+                                            <Button size="sm" className="bg-green-600 text-white" onClick={() => setEditingSoil(true)}>Update Data</Button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Irrigation Modal */}
+            {
+                isIrrigationModalOpen && selectedParcel && (
+                    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-lg p-6 max-w-sm w-full text-gray-900 shadow-xl">
+                            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                                <Droplets className="h-5 w-5 text-blue-500" />
+                                Irrigation Schedule
+                            </h3>
+
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center border-b pb-2">
+                                    <span className="text-gray-600">Last Irrigated</span>
+                                    <span className="font-medium">{selectedParcel.lastIrrigationDate ? new Date(selectedParcel.lastIrrigationDate).toLocaleDateString() : 'Not recorded'}</span>
+                                </div>
+
+                                <div className="bg-blue-50 p-4 rounded text-center">
+                                    <p className="text-sm text-blue-800 mb-1">Next Irrigation Due</p>
+                                    <p className="text-2xl font-bold text-blue-900">
+                                        {selectedParcel.lastIrrigationDate
+                                            ? new Date(new Date(selectedParcel.lastIrrigationDate).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()
+                                            : 'Today'}
+                                    </p>
+                                    <p className="text-xs text-blue-600 mt-1">Based on current weather and crop stage</p>
+                                </div>
+
+                                <div className="pt-2">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Update Status</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="date"
+                                            className="border border-gray-300 rounded px-3 py-2 w-full text-sm"
+                                            value={irrigationDateInput}
+                                            onChange={(e) => setIrrigationDateInput(e.target.value)}
+                                        />
+                                        <Button
+                                            className="bg-blue-600 hover:bg-blue-700 text-white shrink-0"
+                                            onClick={() => {
+                                                if (!irrigationDateInput) return;
+                                                updateParcel(selectedParcel._id, {
+                                                    lastIrrigationDate: new Date(irrigationDateInput).toISOString(),
+                                                    irrigationType: 'Irrigated' // Auto-update status to Irrigated
+                                                });
+                                                setIsIrrigationModalOpen(false);
+                                            }}
+                                        >
+                                            Save & Update Status
+                                        </Button>
+                                    </div>
+                                </div>
+                                <Button variant="ghost" className="w-full text-gray-500" onClick={() => setIsIrrigationModalOpen(false)}>Close</Button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Eligibility Modal */}
+            {
+                isEligibilityModalOpen && selectedScheme && (
+                    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-lg p-6 max-w-lg w-full text-gray-900 shadow-xl border-t-4 border-blue-600">
+                            {(() => {
+                                const status = checkEligibility(selectedScheme);
+                                return (
+                                    <>
+                                        <div className="flex justify-between items-start mb-6">
+                                            <div>
+                                                <h3 className="text-2xl font-bold text-gray-900">{selectedScheme.name}</h3>
+                                                <p className="text-gray-500 text-sm mt-1">Scheme ID: #SCH-{Math.floor(Math.random() * 1000)}</p>
+                                            </div>
+                                            <Badge className={`border-none px-3 py-1 ${status.qualified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                {status.qualified ? 'You are Eligible' : 'Not Eligible'}
+                                            </Badge>
+                                        </div>
+
+                                        <div className="space-y-6">
+                                            {!status.qualified && (
+                                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
+                                                    <AlertTriangle className="h-5 w-5 text-red-600 shrink-0" />
+                                                    <div>
+                                                        <h4 className="font-semibold text-red-900 text-sm">Eligibility Check Failed</h4>
+                                                        <p className="text-red-700 text-sm mt-1">{status.reason}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {status.qualified && (
+                                                <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex gap-3">
+                                                    <Leaf className="h-5 w-5 text-green-600 shrink-0" />
+                                                    <div>
+                                                        <h4 className="font-semibold text-green-900 text-sm">Eligibility Confirmed</h4>
+                                                        <p className="text-green-700 text-sm mt-1">{status.reason}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                                                    <Leaf className="h-4 w-4 text-green-600" />
+                                                    Benefits
+                                                </h4>
+                                                <p className="text-gray-700">{selectedScheme.desc || selectedScheme.description}</p>
+                                                <div className="mt-3 pt-3 border-t border-gray-200">
+                                                    <p className="font-bold text-lg text-blue-700">{selectedScheme.benefits}</p>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <h4 className="font-semibold text-gray-900 mb-3">Eligibility Criteria</h4>
+                                                <ul className="space-y-2">
+                                                    <li className="flex items-start gap-2 text-sm text-gray-600">
+                                                        <div className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
+                                                        {selectedScheme.eligibility}
+                                                    </li>
+                                                    <li className="flex items-start gap-2 text-sm text-gray-600">
+                                                        <div className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
+                                                        Click to view full documentation requirements.
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <div className="flex flex-col gap-3">
+                                                {enrolledSchemes.some(s => s.schemeName === selectedScheme.name) ? (
+                                                    <Button className="w-full h-12 text-lg bg-green-600 hover:bg-green-700 text-white" disabled>
+                                                        Already Applied
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        disabled={!status.qualified}
+                                                        className={`w-full h-12 text-lg text-white ${status.qualified ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
+                                                        onClick={() => {
+                                                            setIsEligibilityModalOpen(false);
+                                                            setIsApplicationFormOpen(true);
+                                                        }}
+                                                    >
+                                                        {status.qualified ? 'Apply Now' : 'Not Eligible to Apply'}
+                                                    </Button>
+                                                )}
+                                                <Button variant="ghost" className="w-full text-gray-500" onClick={() => setIsEligibilityModalOpen(false)}>
+                                                    Close
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </>
+                                );
+                            })()}
+                        </div>
+                    </div>
+                )
+            }
+            {/* Application Form Modal */}
+            {
+                isApplicationFormOpen && selectedScheme && (
+                    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl p-0 max-w-2xl w-full text-gray-900 shadow-xl max-h-[90vh] overflow-y-auto">
+                            <div className="bg-blue-600 p-6 text-white rounded-t-xl">
+                                <h3 className="text-xl font-bold">Apply for {selectedScheme.name}</h3>
+                                <p className="text-blue-100 text-sm opacity-90">Please verify your details before submitting</p>
+                            </div>
+
+                            <div className="p-6 space-y-6">
+                                {/* Section 1: Land Details */}
+                                <div className="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+                                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                        <Tractor className="h-4 w-4 text-blue-600" />
+                                        1. Land Details (Auto-fetched)
+                                    </h4>
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div className="bg-white p-3 rounded border border-gray-100">
+                                            <span className="text-gray-500 block text-xs mb-1">Total Land Area</span>
+                                            <span className="font-bold text-gray-900 text-lg">
+                                                {parcels.reduce((sum, p) => sum + (Number(p.area) || 0), 0).toFixed(1)} Acres
+                                            </span>
+                                        </div>
+                                        <div className="bg-white p-3 rounded border border-gray-100">
+                                            <span className="text-gray-500 block text-xs mb-1">Active Crops Link</span>
+                                            <span className="font-medium text-gray-900">
+                                                {parcels.map(p => p.currentCrop).filter(Boolean).join(', ') || 'No active crops'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Section 2: Farmer Category */}
+                                <div>
+                                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                                        <Leaf className="h-4 w-4 text-green-600" />
+                                        2. Farmer Category
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        {['Small (< 2ha / 5 acres)', 'Medium (2-10ha / 5-25 acres)', 'Large (> 10ha / 25 acres)'].map((cat, i) => (
+                                            <label key={i} className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${applicationForm.category === cat ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'}`}>
+                                                <input
+                                                    type="radio"
+                                                    name="category"
+                                                    className="h-4 w-4 text-blue-600"
+                                                    checked={applicationForm.category === cat}
+                                                    onChange={() => setApplicationForm({ ...applicationForm, category: cat })}
+                                                />
+                                                <span className="text-sm font-medium text-gray-700">{cat}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Section 3: Personal Details (Prefilled) */}
+                                <div>
+                                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                        <div className="h-4 w-4 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xs">i</div>
+                                        3. Personal Details (Prefilled)
+                                    </h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-500 mb-1">Name</label>
+                                            <input type="text" className="w-full border rounded-md p-2 bg-gray-50 text-gray-700 text-sm font-medium" value={farmerProfile?.name} disabled />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-500 mb-1">Mobile</label>
+                                            <input type="text" className="w-full border rounded-md p-2 bg-gray-50 text-gray-700 text-sm font-medium" value={farmerProfile?.phone} disabled />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-500 mb-1">Village</label>
+                                            <input type="text" className="w-full border rounded-md p-2 bg-gray-50 text-gray-700 text-sm font-medium" value={farmerProfile?.village} disabled />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-500 mb-1">District</label>
+                                            <input type="text" className="w-full border rounded-md p-2 bg-gray-50 text-gray-700 text-sm font-medium" value={farmerProfile?.district} disabled />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <label className="block text-xs font-semibold text-gray-700 mb-1">Bank Account Number <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                className="w-full border rounded-md p-2 text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                placeholder="Enter your active bank account number"
+                                                value={applicationForm.bankAccount}
+                                                onChange={(e) => setApplicationForm({ ...applicationForm, bankAccount: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Declaration */}
+                                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                                    <label className="flex items-start gap-3 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            className="mt-1 h-4 w-4 text-blue-600 rounded border-gray-300"
+                                            checked={applicationForm.declaration}
+                                            onChange={(e) => setApplicationForm({ ...applicationForm, declaration: e.target.checked })}
+                                        />
+                                        <div className="text-sm text-yellow-900">
+                                            <span className="font-bold block mb-1">Declaration</span>
+                                            I declare that I am an active farmer, the land details linked are correct, and I have not applied for duplicate benefits for this scheme.
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div className="flex gap-4 pt-2">
+                                    <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-11 shadow-md transition-all" onClick={async () => {
+                                        if (!applicationForm.declaration) {
+                                            alert("Please agree to the declaration before submitting.");
+                                            return;
+                                        }
+                                        if (!applicationForm.bankAccount) {
+                                            alert("Please enter a bank account number.");
+                                            return;
+                                        }
+
+                                        try {
+                                            const res = await fetch(`http://localhost:3000/api/agriculture/farmers/${farmerId}/schemes/enroll`, {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                    schemeName: selectedScheme.name,
+                                                    category: applicationForm.category,
+                                                    landArea: parcels.reduce((sum, p) => sum + (Number(p.area) || 0), 0),
+                                                    bankAccount: applicationForm.bankAccount
+                                                })
+                                            });
+                                            const data = await res.json();
+                                            if (data.success) {
+                                                setEnrolledSchemes(data.data);
+                                                setIsApplicationFormOpen(false);
+                                                alert(`Application for ${selectedScheme.name} Submitted Successfully!`);
+                                            } else {
+                                                alert(`Submission Failed: ${data.message}`);
+                                            }
+                                        } catch (e: any) {
+                                            console.error("Submission error:", e);
+                                            alert(`Connection Error: ${e.message}. Ensure backend is running.`);
+                                        }
+                                    }}>
+                                        Submit Application
+                                    </Button>
+                                    <Button variant="outline" className="flex-1 h-11" onClick={() => setIsApplicationFormOpen(false)}>Cancel</Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
 
             {/* Display Enrolled Schemes in Tab (Optional: You can add this to the main layout if needed, currently just showing logic) */}
-        </div>
+
+            {/* Shared Footer */}
+            <DashboardFooter />
+        </div >
     );
 }
