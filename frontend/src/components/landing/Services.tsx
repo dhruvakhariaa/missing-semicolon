@@ -63,15 +63,7 @@ const services = [
     },
 ]
 
-// Image Placeholder Component
-function ImagePlaceholder({ className = '' }: { className?: string }) {
-    return (
-        <div className={`flex flex-col items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg ${className}`}>
-            <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
-            <span className="text-sm text-gray-500 font-medium">[Image Placeholder]</span>
-        </div>
-    )
-}
+
 
 export default function Services() {
     const [activeService, setActiveService] = useState<string | null>(null)
@@ -163,9 +155,6 @@ export default function Services() {
                                             )
                                         })}
                                     </div>
-
-                                    {/* Image Placeholder */}
-                                    <ImagePlaceholder className="w-full h-32 mb-6" />
                                 </div>
                             </div>
                         )

@@ -6,6 +6,11 @@ const contentRoutes = require('./contentRoutes');
 
 const router = express.Router();
 
+// Health check endpoint
+router.get('/health', (req, res) => {
+    res.json({ status: 'UP', service: 'Agriculture Service' });
+});
+
 router.use('/farmers', farmerRoutes);
 router.use('/advisories', advisoryRoutes);
 router.use('/chat', chatbotRoutes);

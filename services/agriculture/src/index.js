@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const axios = require('axios');
 
 dotenv.config(); // Must be loaded before routes/imports that use env vars
 
@@ -23,7 +24,9 @@ const logger = createLogger({
 });
 
 const app = express();
-const PORT = process.env.PORT || 3002; // Agriculture service typically on 3002
+const PORT = process.env.PORT || 3002;
+const SERVICE_NAME = process.env.SERVICE_NAME || 'agriculture';
+const INSTANCE_ID = process.env.INSTANCE_ID || '1';
 
 // Middleware
 app.use(cors());
@@ -50,7 +53,35 @@ app.use((err, req, res, next) => {
   });
 });
 
+// ===========================================
+// Service Registration with API Gateway
+// ===========================================
+
+const registerWithGateway = async () => {
+  const gatewayUrl = process.env.API_GATEWAY_URL || 'http://api-gateway:8000';
+
+  try {
+    await axios.post(`${gatewayUrl}/api/registry/register`, {
+      name: SERVICE_NAME,
+      url: `http://${SERVICE_NAME}-service:${PORT}`,
+      port: PORT,
+      instanceId: INSTANCE_ID,
+      healthEndpoint: '/api/agriculture/health'
+    });
+    logger.info('Registered with API Gateway');
+  } catch (error) {
+    logger.warn('Could not register with API Gateway: ' + error.message);
+  }
+};
+
+// ===========================================
+// Start Server
+// ===========================================
+
 app.listen(PORT, () => {
   logger.info(`Agriculture Service running on port ${PORT}`);
   console.log(`Agriculture Service running on port ${PORT}`);
+
+  // Register with gateway after startup
+  setTimeout(registerWithGateway, 2000);
 });

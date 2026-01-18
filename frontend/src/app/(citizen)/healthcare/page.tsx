@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Building2, Stethoscope, Calendar, User, ArrowRight, Video, FileText } from 'lucide-react';
+import { Building2, Stethoscope, Calendar, User, ArrowRight, Video, FileText, Brain } from 'lucide-react';
 import DashboardFooter from '@/components/common/DashboardFooter';
 
 export default function HealthcarePage() {
@@ -30,10 +30,10 @@ export default function HealthcarePage() {
                                 Access medical services, tele-consultations, and digital health records seamlessly on India&apos;s unified platform.
                             </p>
                             <div className="flex gap-4 pt-2">
-                                <Link href="/healthcare/appointments" className="bg-white text-brand-700 px-6 py-3 rounded-xl font-bold hover:bg-brand-50 transition-colors shadow-lg shadow-black/10">
+                                <Link href="/appointments" className="bg-white text-brand-700 px-6 py-3 rounded-xl font-bold hover:bg-brand-50 transition-colors shadow-lg shadow-black/10">
                                     Book Appointment
                                 </Link>
-                                <Link href="/healthcare/doctors" className="bg-brand-600 border border-white/30 text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-500 transition-colors">
+                                <Link href="/doctors" className="bg-brand-600 border border-white/30 text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-500 transition-colors">
                                     Find Doctors
                                 </Link>
                             </div>
@@ -53,8 +53,31 @@ export default function HealthcarePage() {
                 {/* Feature Cards Grid (4x2 Layout) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
-                    {/* 1. Departments */}
-                    <Link href="/healthcare/departments" className="group">
+                    {/* 1. AI Health Checker - NEW! */}
+                    <Link href="/ai-health-checker" className="group">
+                        <div className="aspect-[4/5] bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-6 flex flex-col justify-between hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -ml-12 -mb-12"></div>
+                            <div className="relative z-10">
+                                <div className="h-14 w-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
+                                    <Brain className="h-7 w-7" />
+                                </div>
+                                <span className="inline-block px-2 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-bold text-white mb-2">
+                                    NEW! AI Powered
+                                </span>
+                            </div>
+                            <div className="relative z-10">
+                                <h3 className="text-xl font-bold text-white">AI Health Checker</h3>
+                                <p className="text-sm text-white/80 mt-2">Get instant disease predictions from symptoms.</p>
+                                <div className="mt-4 flex items-center text-sm font-bold text-white gap-1 border-t border-white/20 pt-4">
+                                    Try Now <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* 2. Departments */}
+                    <Link href="/departments" className="group">
                         <div className="aspect-[4/5] bg-white rounded-2xl border border-brand-100 p-6 flex flex-col justify-between hover:shadow-xl hover:border-brand-300 transition-all cursor-pointer relative overflow-hidden">
                             <div className="h-14 w-14 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">
                                 <Building2 className="h-7 w-7" />
@@ -69,8 +92,8 @@ export default function HealthcarePage() {
                         </div>
                     </Link>
 
-                    {/* 2. Find Doctors */}
-                    <Link href="/healthcare/doctors" className="group">
+                    {/* 3. Find Doctors */}
+                    <Link href="/doctors" className="group">
                         <div className="aspect-[4/5] bg-white rounded-2xl border border-brand-100 p-6 flex flex-col justify-between hover:shadow-xl hover:border-brand-300 transition-all cursor-pointer relative overflow-hidden">
                             <div className="h-14 w-14 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 mb-4 group-hover:scale-110 transition-transform">
                                 <Stethoscope className="h-7 w-7" />
@@ -85,8 +108,8 @@ export default function HealthcarePage() {
                         </div>
                     </Link>
 
-                    {/* 3. My Schedule */}
-                    <Link href="/healthcare/appointments" className="group">
+                    {/* 4. My Schedule */}
+                    <Link href="/appointments" className="group">
                         <div className="aspect-[4/5] bg-white rounded-2xl border border-brand-100 p-6 flex flex-col justify-between hover:shadow-xl hover:border-brand-300 transition-all cursor-pointer relative overflow-hidden">
                             <div className="h-14 w-14 bg-green-50 rounded-xl flex items-center justify-center text-green-600 mb-4 group-hover:scale-110 transition-transform">
                                 <Calendar className="h-7 w-7" />
@@ -101,8 +124,8 @@ export default function HealthcarePage() {
                         </div>
                     </Link>
 
-                    {/* 4. Health ID */}
-                    <Link href="/healthcare/profile" className="group">
+                    {/* 5. Health ID */}
+                    <Link href="/profile" className="group">
                         <div className="aspect-[4/5] bg-white rounded-2xl border border-brand-100 p-6 flex flex-col justify-between hover:shadow-xl hover:border-brand-300 transition-all cursor-pointer relative overflow-hidden">
                             <div className="h-14 w-14 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600 mb-4 group-hover:scale-110 transition-transform">
                                 <User className="h-7 w-7" />
@@ -117,8 +140,8 @@ export default function HealthcarePage() {
                         </div>
                     </Link>
 
-                    {/* 5. Tele-Medicine */}
-                    <Link href="/healthcare/doctors?consult=video" className="group">
+                    {/* 6. Tele-Medicine */}
+                    <Link href="/doctors?consult=video" className="group">
                         <div className="aspect-[4/5] bg-white rounded-2xl border border-brand-100 p-6 flex flex-col justify-between hover:shadow-xl hover:border-brand-300 transition-all cursor-pointer relative overflow-hidden">
                             <div className="h-14 w-14 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600 mb-4 group-hover:scale-110 transition-transform">
                                 <Video className="h-7 w-7" />
@@ -133,8 +156,8 @@ export default function HealthcarePage() {
                         </div>
                     </Link>
 
-                    {/* 6. Lab Reports */}
-                    <Link href="/healthcare/lab-reports" className="group">
+                    {/* 7. Lab Reports */}
+                    <Link href="/lab-reports" className="group">
                         <div className="aspect-[4/5] bg-white rounded-2xl border border-brand-100 p-6 flex flex-col justify-between hover:shadow-xl hover:border-brand-300 transition-all relative overflow-hidden">
                             <div className="h-14 w-14 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 mb-4 group-hover:scale-110 transition-transform">
                                 <FileText className="h-7 w-7" />
@@ -149,8 +172,8 @@ export default function HealthcarePage() {
                         </div>
                     </Link>
 
-                    {/* 7. Blood Bank */}
-                    <Link href="/healthcare/blood-bank" className="group">
+                    {/* 8. Blood Bank */}
+                    <Link href="/blood-bank" className="group">
                         <div className="aspect-[4/5] bg-white rounded-2xl border border-brand-100 p-6 flex flex-col justify-between hover:shadow-xl hover:border-brand-300 transition-all relative overflow-hidden">
                             <div className="h-14 w-14 bg-red-50 rounded-xl flex items-center justify-center text-red-600 mb-4 group-hover:scale-110 transition-transform">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18.6 4.7a6 6 0 0 1 0 8.5l-6 6a1 1 0 0 1-1.4 0l-6-6a6 6 0 0 1 8.5-8.5l.7.7.7-.7Z" /><path d="M12 11v6" /></svg>
@@ -165,8 +188,8 @@ export default function HealthcarePage() {
                         </div>
                     </Link>
 
-                    {/* 8. Ambulance */}
-                    <Link href="/healthcare/emergency" className="group">
+                    {/* 9. Ambulance */}
+                    <Link href="/emergency" className="group">
                         <div className="aspect-[4/5] bg-white rounded-2xl border border-brand-100 p-6 flex flex-col justify-between hover:shadow-xl hover:border-brand-300 transition-all relative overflow-hidden">
                             <div className="h-14 w-14 bg-red-100 rounded-xl flex items-center justify-center text-red-700 mb-4 group-hover:scale-110 transition-transform">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>

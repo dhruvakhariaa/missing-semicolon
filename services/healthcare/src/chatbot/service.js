@@ -1,10 +1,13 @@
 const Groq = require("groq-sdk");
 const { HEALTHCARE_SYSTEM_PROMPT } = require("./prompts");
 
-// Initialize Groq API
-const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY
-});
+// Initialize Groq API only if API key is available
+let groq = null;
+if (process.env.GROQ_API_KEY) {
+    groq = new Groq({
+        apiKey: process.env.GROQ_API_KEY
+    });
+}
 
 // Store chat history in-memory (For production, use Redis/MongoDB)
 const chatSessions = new Map();
@@ -17,6 +20,11 @@ const chatSessions = new Map();
  * @returns {Promise<string>} - AI response
  */
 const generateResponse = async (sessionId, message, language = 'english') => {
+    // If Groq is not configured, return a fallback message
+    if (!groq) {
+        return "The AI chatbot is not configured. Please set the GROQ_API_KEY environment variable to enable this feature.";
+    }
+
     try {
         let chatHistory = chatSessions.get(sessionId);
 
