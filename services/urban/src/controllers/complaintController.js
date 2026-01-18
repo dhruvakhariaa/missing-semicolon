@@ -93,14 +93,76 @@ exports.createComplaint = async (req, res) => {
 // @access  Public
 exports.updateComplaint = async (req, res) => {
     try {
+        // Get original complaint to check status change
+        const originalComplaint = await Complaint.findById(req.params.id);
+        if (!originalComplaint) {
+            return res.status(404).json({ success: false, error: 'Complaint not found' });
+        }
+
+        // Build update object
+        const updateData = { ...req.body };
+
+        // If status is changing, add to history
+        if (req.body.status && req.body.status !== originalComplaint.status) {
+            const historyEntry = {
+                status: req.body.status,
+                timestamp: new Date(),
+                note: getStatusNote(req.body.status)
+            };
+
+            // Push to history array
+            updateData.$push = { history: historyEntry };
+            delete updateData.status; // Remove status from $set
+
+            // Use findByIdAndUpdate with both $set and $push
+            const complaint = await Complaint.findByIdAndUpdate(
+                req.params.id,
+                {
+                    $set: { status: req.body.status, ...req.body },
+                    $push: { history: historyEntry }
+                },
+                { new: true, runValidators: true }
+            );
+
+            // Create notification
+            let notificationMessage = '';
+            let notificationType = 'Info';
+
+            switch (req.body.status) {
+                case 'In Progress':
+                    notificationMessage = `Your complaint "${complaint.title}" is now being processed.`;
+                    notificationType = 'Info';
+                    break;
+                case 'Resolved':
+                    notificationMessage = `Good news! Your complaint "${complaint.title}" has been resolved.`;
+                    notificationType = 'Success';
+                    break;
+                case 'Rejected':
+                    notificationMessage = `Your complaint "${complaint.title}" was rejected.`;
+                    notificationType = 'Warning';
+                    break;
+                case 'Pending':
+                    notificationMessage = `Your complaint "${complaint.title}" has been reopened.`;
+                    notificationType = 'Info';
+                    break;
+            }
+
+            if (notificationMessage) {
+                await Notification.create({
+                    userId: complaint.citizenId,
+                    message: notificationMessage,
+                    type: notificationType
+                });
+            }
+
+            return res.status(200).json({ success: true, data: complaint });
+        }
+
+        // If no status change, just update normally
         const complaint = await Complaint.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
         });
-
-        if (!complaint) {
-            return res.status(404).json({ success: false, error: 'Complaint not found' });
-        }
 
         res.status(200).json({ success: true, data: complaint });
     } catch (error) {
@@ -108,3 +170,14 @@ exports.updateComplaint = async (req, res) => {
         res.status(400).json({ success: false, error: error.message });
     }
 };
+
+// Helper function to get status notes
+function getStatusNote(status) {
+    switch (status) {
+        case 'In Progress': return 'Work has started on this complaint';
+        case 'Resolved': return 'Complaint has been resolved';
+        case 'Rejected': return 'Complaint was rejected';
+        case 'Pending': return 'Complaint reopened';
+        default: return 'Status updated';
+    }
+}

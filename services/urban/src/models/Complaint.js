@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const complaintSchema = new mongoose.Schema({
     citizenId: {
-        type: String, // Assuming string for simplicity in demo, or ObjectId if linked to Auth service
+        type: String,
         required: true
     },
     title: {
@@ -30,11 +30,17 @@ const complaintSchema = new mongoose.Schema({
     },
     priority: {
         type: String,
-        enum: ['Low', 'Medium', 'High'],
+        enum: ['Low', 'Medium', 'High', 'Urgent'],
         default: 'Medium'
     },
     images: [{
-        type: String // URLs to images
+        type: String // Base64 encoded images
+    }],
+    // Timeline/History of status changes
+    history: [{
+        status: String,
+        timestamp: { type: Date, default: Date.now },
+        note: String
     }],
     resolvedAt: {
         type: Date
@@ -45,6 +51,18 @@ const complaintSchema = new mongoose.Schema({
     }
 }, {
     timestamps: true
+});
+
+// Add initial history entry when complaint is created
+complaintSchema.pre('save', function (next) {
+    if (this.isNew && (!this.history || this.history.length === 0)) {
+        this.history = [{
+            status: 'Pending',
+            timestamp: new Date(),
+            note: 'Complaint filed'
+        }];
+    }
+    next();
 });
 
 module.exports = mongoose.model('Complaint', complaintSchema);

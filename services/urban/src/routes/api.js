@@ -20,6 +20,12 @@ const {
     getNotificationMetrics
 } = require('../controllers/notificationController');
 
+const {
+    getAllFeedback,
+    getFeedbackMetrics,
+    submitFeedback
+} = require('../controllers/feedbackController');
+
 // Complaint Routes
 router.get('/complaints/metrics', getComplaintMetrics); // Must be before /:id
 router.route('/complaints')
@@ -41,9 +47,16 @@ router.get('/notifications/metrics', getNotificationMetrics);
 router.route('/notifications')
     .get(getNotifications);
 
+// Feedback Routes
+router.get('/feedback/metrics', getFeedbackMetrics);
+router.route('/feedback')
+    .get(getAllFeedback)
+    .post(submitFeedback);
+
 // Health Check
 router.get('/health', (req, res) => {
     res.status(200).json({ status: 'UP', service: 'urban-service' });
 });
 
 module.exports = router;
+

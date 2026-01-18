@@ -57,9 +57,15 @@ data/redis/
 data/rabbitmq/
 
 # Lock files (keep one based on package manager choice)
+<<<<<<< HEAD
  package-lock.json
  yarn.lock
  pnpm-lock.yaml
+=======
+package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+>>>>>>> origin/dhruv
 
 # Misc
 .cache/
@@ -74,8 +80,12 @@ docs/_build/
 services/*/node_modules/
 frontend/node_modules/
 packages/*/node_modules/
+<<<<<<< HEAD
 
 package-lock.json
 
 docs/TEAM_LEAD_ROADMAP.md
 docs/diagrams/
+=======
+package-lock.json
+>>>>>>> origin/dhruv
