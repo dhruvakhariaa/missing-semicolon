@@ -28,9 +28,9 @@ export default function Header() {
                         />
                         <div className="hidden sm:block">
                             <h1 className="text-sm font-bold text-gov-blue-700 leading-tight">
-                                सेवा मंच
+                                Jan Sewa Portal
                             </h1>
-                            <p className="text-xs text-gov-blue-500">Service Platform</p>
+                            <p className="text-xs text-gov-blue-500">Government of India</p>
                         </div>
                     </Link>
 
