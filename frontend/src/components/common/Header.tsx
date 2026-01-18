@@ -17,7 +17,7 @@ export default function Header() {
                         />
                     </div>
                     <div className="flex flex-col">
-                        <h1 className="text-xl font-bold text-gray-900 leading-tight">Service Delivery Platform</h1>
+                        <h1 className="text-xl font-bold text-gray-900 leading-tight">Jan Sewa Portal</h1>
                         <span className="text-xs text-gray-500 font-medium">Government of India</span>
                     </div>
                 </div>
@@ -35,12 +35,7 @@ export default function Header() {
                     </Link>
                 </nav>
 
-                {/* Right Side: Logout */}
-                <div className="flex items-center gap-4">
-                    <button className="flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 transition-colors">
-                        Logout
-                    </button>
-                </div>
+
             </div>
         </header>
     );

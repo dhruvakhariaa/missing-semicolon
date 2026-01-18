@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Upload, X, FileText } from 'lucide-react';
+import { Upload, X, FileText, MapPin, Loader2 } from 'lucide-react';
 
 export default function ComplaintForm() {
     const router = useRouter();
@@ -17,10 +17,43 @@ export default function ComplaintForm() {
     });
     const [images, setImages] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
+    const [detectingLocation, setDetectingLocation] = useState(false);
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const debounceRef = useRef<NodeJS.Timeout | null>(null);
     const [message, setMessage] = useState('');
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+
+        if (name === 'location') {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            if (value.length > 2) {
+                debounceRef.current = setTimeout(async () => {
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(value)}&limit=5`);
+                        const data = await res.json();
+                        setSuggestions(data);
+                        setShowSuggestions(true);
+                    } catch (err) {
+                        console.error("Autocomplete error:", err);
+                    }
+                }, 500);
+            } else {
+                setSuggestions([]);
+                setShowSuggestions(false);
+            }
+        }
+    };
+
+    const handleSelectLocation = (place: any) => {
+        setFormData(prev => ({
+            ...prev,
+            location: place.display_name
+        }));
+        setSuggestions([]);
+        setShowSuggestions(false);
     };
 
     // Handle image upload - convert to base64
@@ -43,6 +76,42 @@ export default function ComplaintForm() {
 
     const removeImage = (index: number) => {
         setImages(prev => prev.filter((_, i) => i !== index));
+    };
+
+    // Geolocation Handler
+    const handleDetectLocation = () => {
+        if (!navigator.geolocation) {
+            setMessage('Geolocation is not supported by your browser');
+            return;
+        }
+
+        setDetectingLocation(true);
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const { latitude, longitude } = position.coords;
+            try {
+                // Reverse geocoding using OpenStreetMap Nominatim API
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                const data = await response.json();
+
+                const address = data.display_name || `${latitude}, ${longitude}`;
+                const formattedLocation = `${address} (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+
+                setFormData(prev => ({ ...prev, location: formattedLocation }));
+                setMessage('Location detected successfully!');
+            } catch (error) {
+                setFormData(prev => ({ ...prev, location: `${latitude}, ${longitude}` }));
+                setMessage('Could not fetch address, using coordinates.');
+            } finally {
+                setDetectingLocation(false);
+            }
+        }, (error) => {
+            setDetectingLocation(false);
+            setMessage('Unable to retrieve your location. Please allow access.');
+        }, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -96,7 +165,7 @@ export default function ComplaintForm() {
             </h2>
 
             {message && (
-                <div className={`p-4 mb-6 rounded-lg text-sm font-inter font-medium flex items-center gap-3 ${message.includes('success') ? 'bg-brand-50 text-brand-500 border border-brand-100' : 'bg-brand-100 text-brand-700 border border-brand-200'}`}>
+                <div className={`p-4 mb-6 rounded-lg text-sm font-inter font-medium flex items-center gap-3 ${message.includes('success') || message.includes('Location detected') ? 'bg-brand-50 text-brand-500 border border-brand-100' : 'bg-brand-100 text-brand-700 border border-brand-200'}`}>
                     {message}
                 </div>
             )}
@@ -141,15 +210,39 @@ export default function ComplaintForm() {
                     </div>
                     <div>
                         <label className="block text-sm font-dm-sans font-semibold text-brand-700 mb-2">Location</label>
-                        <input
-                            type="text"
-                            name="location"
-                            value={formData.location}
-                            onChange={handleChange}
-                            required
-                            className="w-full px-4 py-3 bg-brand-50 border border-brand-100 rounded-lg focus:ring-2 focus:ring-brand-300 transition-all outline-none font-inter text-brand-900"
-                            placeholder="e.g., MG Road, Block 4"
-                        />
+                        <div className="relative">
+                            <input
+                                type="text"
+                                name="location"
+                                value={formData.location}
+                                onChange={handleChange}
+                                required
+                                className="w-full px-4 py-3 bg-brand-50 border border-brand-100 rounded-lg focus:ring-2 focus:ring-brand-300 transition-all outline-none font-inter text-brand-900 pr-10"
+                                placeholder="Start typing address..."
+                            />
+                            {showSuggestions && suggestions.length > 0 && (
+                                <ul className="absolute z-10 w-full bg-white border border-brand-100 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
+                                    {suggestions.map((place: any, idx: number) => (
+                                        <li
+                                            key={idx}
+                                            onClick={() => handleSelectLocation(place)}
+                                            className="px-4 py-3 hover:bg-brand-50 cursor-pointer text-sm font-inter text-brand-900 border-b border-brand-50 last:border-none"
+                                        >
+                                            {place.display_name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            <button
+                                type="button"
+                                onClick={handleDetectLocation}
+                                disabled={detectingLocation}
+                                className="absolute right-3 top-3 text-brand-400 hover:text-brand-600 transition-colors"
+                                title="Detect my location"
+                            >
+                                {detectingLocation ? <Loader2 className="w-5 h-5 animate-spin" /> : <MapPin className="w-5 h-5" />}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -163,8 +256,8 @@ export default function ComplaintForm() {
                                 type="button"
                                 onClick={() => setFormData({ ...formData, priority })}
                                 className={`px-4 py-2 rounded-lg border-2 font-inter font-medium text-sm transition-all ${formData.priority === priority
-                                        ? getPriorityColor(priority) + ' ring-2 ring-offset-1 ring-brand-300'
-                                        : 'bg-brand-50 text-brand-500 border-brand-100 hover:bg-brand-100'
+                                    ? getPriorityColor(priority) + ' ring-2 ring-offset-1 ring-brand-300'
+                                    : 'bg-brand-50 text-brand-500 border-brand-100 hover:bg-brand-100'
                                     }`}
                             >
                                 {priority}
