@@ -85,7 +85,6 @@ packages/*/node_modules/
 package-lock.json
 
 docs/TEAM_LEAD_ROADMAP.md
-docs/diagrams/
 =======
 package-lock.json
 >>>>>>> origin/dhruv
