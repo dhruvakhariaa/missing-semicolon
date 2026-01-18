@@ -4,7 +4,17 @@
 
 A comprehensive digital infrastructure platform supporting multiple public services (Healthcare, Agriculture, Urban) through a shared, modular, and scalable microservices architecture.
 
-![Jan Sewa Portal - Landing Page](docs/diagrams/landing_page.png)
+<p align="center">
+  <img src="docs/diagrams/logo.jpeg" alt="Jan Sewa Portal Logo" width="200"/>
+</p>
+
+---
+
+## 🖥️ Landing Page Preview
+
+<p align="center">
+  <img src="docs/diagrams/landing_page.png" alt="Jan Sewa Portal - Landing Page" width="100%"/>
+</p>
 
 ---
 
@@ -14,6 +24,7 @@ A comprehensive digital infrastructure platform supporting multiple public servi
 - [Features](#-features)
 - [System Architecture](#-system-architecture)
 - [AI-Powered Health Checker](#-ai-powered-health-checker)
+- [Screenshots](#-screenshots)
 - [Tech Stack](#-tech-stack)
 - [Project Structure](#-project-structure)
 - [Setup & Installation](#-setup--installation)
@@ -96,7 +107,9 @@ A unified microservices-based platform with:
 
 Our platform is built on a robust microservices architecture that ensures scalability, fault tolerance, and independent deployment of services.
 
-![System Architecture](docs/diagrams/system_architecture.png)
+<p align="center">
+  <img src="docs/diagrams/system_architecture.png" alt="System Architecture Diagram" width="100%"/>
+</p>
 
 ### Architecture Highlights
 
@@ -148,7 +161,9 @@ Our platform is built on a robust microservices architecture that ensures scalab
 
 One of our innovative features is an **AI-powered disease prediction system** integrated into the Healthcare service. This intelligent bot helps citizens get preliminary health assessments based on their symptoms.
 
-![AI Health Checker](docs/diagrams/ai_health_checker.png)
+<p align="center">
+  <img src="docs/diagrams/ai_health_checker.png" alt="AI Health Checker" width="100%"/>
+</p>
 
 ### How It Works
 
@@ -172,7 +187,32 @@ One of our innovative features is an **AI-powered disease prediction system** in
 
 ---
 
-## �️ Tech Stack
+## 📸 Screenshots
+
+### Application Views
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="docs/diagrams/Desktop - 1.png" alt="Dashboard View" width="100%"/>
+      <br/><strong>Dashboard View</strong>
+    </td>
+    <td align="center">
+      <img src="docs/diagrams/Desktop - 2.png" alt="Service Portal" width="100%"/>
+      <br/><strong>Service Portal</strong>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
+      <img src="docs/diagrams/Desktop - 3.png" alt="Admin Panel" width="50%"/>
+      <br/><strong>Admin Panel</strong>
+    </td>
+  </tr>
+</table>
+
+---
+
+## 🛠️ Tech Stack
 
 ### Frontend
 | Technology | Purpose |
@@ -210,7 +250,7 @@ One of our innovative features is an **AI-powered disease prediction system** in
 
 ---
 
-## �📁 Project Structure
+## 📁 Project Structure
 
 ```
 service-delivery-platform/
@@ -244,7 +284,7 @@ service-delivery-platform/
 
 ---
 
-## � Setup & Installation
+## 🚀 Setup & Installation
 
 ### Prerequisites
 
@@ -504,5 +544,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 ---
 
 <p align="center">
+  <img src="docs/diagrams/logo.jpeg" alt="Logo" width="100"/>
+  <br/>
   Made with ❤️ by <b>Team Missing Semicolon</b> for Ingenious Hackathon 7.0
 </p>
