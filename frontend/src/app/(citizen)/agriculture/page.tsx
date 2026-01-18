@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { LandParcelList } from '@/components/agriculture/LandParcelList';
 import { AdvisoryDashboard } from '@/components/agriculture/AdvisoryDashboard';
+import { AgricultureChatbot } from '@/components/agriculture/AgricultureChatbot';
 
 interface WeatherData {
     day: string;
@@ -66,6 +67,7 @@ export default function DashboardPage() {
                 .then(data => {
                     if (data.success) {
                         setFarmerProfile(data.data);
+                        if (data.data.landParcels) setParcels(data.data.landParcels);
                         if (data.data.enrolledSchemes) setEnrolledSchemes(data.data.enrolledSchemes);
                     }
                 })
@@ -123,28 +125,58 @@ export default function DashboardPage() {
         fetch(`http://localhost:3002/api/agriculture/farmers/${id}`)
             .then(res => res.json())
             .then(data => {
-                if (data.success) {
+                if (data.data) {
                     setFarmerName(data.data.name || 'Varun Patel');
                     setParcels(data.data.landParcels || []);
+
+                    // Fetch weather for farmer's location
+                    const loc = data.data.village ? `${data.data.village}, ${data.data.district || ''}` : 'Paithan';
+                    fetch(`http://localhost:3002/api/agriculture/weather?location=${encodeURIComponent(loc)}`)
+                        .then(res => res.json()).then(wData => {
+                            if (wData.success) {
+                                let forecast = wData.data.forecast || [];
+                                if (forecast.length < 7) {
+                                    const extraDays = [
+                                        { day: 'Fri', temp: 31, condition: 'Sunny', rainChance: 0, alert: 'Heatwave Alert' },
+                                        { day: 'Sat', temp: 26, condition: 'Rain', rainChance: 60, alert: 'Rain Advisory' },
+                                        { day: 'Sun', temp: 28, condition: 'Cloudy', rainChance: 20, alert: 'Normal' },
+                                        { day: 'Mon', temp: 29, condition: 'Partly Cloudy', rainChance: 10, alert: 'Normal' }
+                                    ];
+                                    forecast = [...forecast, ...extraDays.slice(0, 7 - forecast.length)];
+                                }
+                                setWeather(forecast);
+                            }
+                        })
+                        .catch(() => {
+                            // Fallback if weather API fails
+                            setWeather([
+                                { day: 'Today', temp: 28, condition: 'Sunny', rainChance: 0, alert: 'Normal' },
+                                { day: 'Tom', temp: 25, condition: 'Cloudy', rainChance: 20, alert: 'Normal' },
+                                { day: 'Wed', temp: 28, condition: 'Cloudy', rainChance: 30, alert: 'Normal' },
+                                { day: 'Thu', temp: 27, condition: 'Sunny', rainChance: 5, alert: 'Normal' },
+                                { day: 'Fri', temp: 31, condition: 'Sunny', rainChance: 0, alert: 'Heatwave Alert' },
+                                { day: 'Sat', temp: 26, condition: 'Rain', rainChance: 60, alert: 'Rain Advisory' },
+                                { day: 'Sun', temp: 28, condition: 'Cloudy', rainChance: 20, alert: 'Normal' }
+                            ]);
+                        });
                 }
             })
             .catch(err => {
                 console.error("Failed to fetch farmer data", err);
                 setFarmerName('Varun Patel');
-                setParcels([
-                    { _id: '1', surveyNumber: '102/A', area: 2.5, village: 'Rampur', irrigationType: 'Rainfed', currentCrop: 'Wheat', sowingDate: '2023-11-12' },
-                    { _id: '2', surveyNumber: '44/B', area: 1.8, village: 'Rampur', irrigationType: 'Rainfed', currentCrop: 'Rice', sowingDate: '2023-08-15' }
-                ]);
-            });
-        fetch(`http://localhost:3002/api/agriculture/schemes`).then(res => res.json()).then(data => data.success && setSchemes(data.data));
-        fetch(`http://localhost:3002/api/agriculture/weather?location=Paithan`)
-            .then(res => res.json()).then(data => data.success && setWeather(data.data.forecast))
-            .catch(() => {
+                // Also parse fallback weather if farmer fetch fails (since weather fetch is nested)
                 setWeather([
                     { day: 'Today', temp: 28, condition: 'Sunny', rainChance: 0, alert: 'Normal' },
-                    { day: 'Tom', temp: 25, condition: 'Heavy Rain', rainChance: 90, alert: 'Warning' }
+                    { day: 'Tom', temp: 25, condition: 'Cloudy', rainChance: 20, alert: 'Normal' },
+                    { day: 'Wed', temp: 28, condition: 'Cloudy', rainChance: 30, alert: 'Normal' },
+                    { day: 'Thu', temp: 27, condition: 'Sunny', rainChance: 5, alert: 'Normal' },
+                    { day: 'Fri', temp: 31, condition: 'Sunny', rainChance: 0, alert: 'Heatwave Alert' },
+                    { day: 'Sat', temp: 26, condition: 'Rain', rainChance: 60, alert: 'Rain Advisory' },
+                    { day: 'Sun', temp: 28, condition: 'Cloudy', rainChance: 20, alert: 'Normal' }
                 ]);
             });
+
+        fetch(`http://localhost:3002/api/agriculture/schemes`).then(res => res.json()).then(data => data.success && setSchemes(data.data));
     }, []);
 
     const handleAddParcel = async () => {
@@ -184,7 +216,7 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-3">
                         <div className="h-10 w-10 flex items-center justify-center overflow-hidden">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="/emblem.jpg" alt="Emblem" className="h-full w-full object-contain mix-blend-multiply" />
+                            <img src="/images/emblem.jpg" alt="Emblem" className="h-full w-full object-contain mix-blend-multiply" />
                         </div>
                         <div className="flex flex-col">
                             <span className="font-bold text-lg leading-none tracking-tight">Service Delivery Platform</span>
@@ -292,6 +324,61 @@ export default function DashboardPage() {
                                         <span className="text-blue-50 font-medium">Rainfed</span>
                                         <span className="font-bold text-white text-xl">{rainfedAcres} Ac</span>
                                     </div>
+
+                                    {/* Irrigation Notification */}
+                                    {(() => {
+                                        const today = new Date();
+                                        today.setHours(0, 0, 0, 0);
+                                        const notification = parcels.map(parcel => {
+                                            if (!parcel.lastIrrigationDate || !parcel.currentCrop) return null;
+
+                                            const lastIrrigated = new Date(parcel.lastIrrigationDate);
+                                            lastIrrigated.setHours(0, 0, 0, 0);
+                                            const diffTime = Math.abs(today.getTime() - lastIrrigated.getTime());
+                                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                                            let interval = 7; // Default
+                                            const crop = parcel.currentCrop.toLowerCase();
+                                            if (crop.includes('wheat')) interval = 10; // Wheat: Every 10-12 days
+                                            else if (crop.includes('cotton')) interval = 7; // Cotton: Every 7-10 days
+                                            else if (crop.includes('mango')) interval = 15; // Mango: Every 15 days
+
+                                            const daysOverdue = diffDays - interval;
+
+                                            // Trigger if due today or past due
+                                            if (daysOverdue >= 0) {
+                                                return { crop: parcel.currentCrop, survey: parcel.surveyNumber, days: diffDays };
+                                            }
+                                            return null;
+                                        }).filter(Boolean)[0]; // Just show first urgent one for space
+
+                                        if (notification) {
+                                            return (
+                                                <div className="flex-1 max-w-xs flex flex-col justify-center p-4 bg-gradient-to-br from-cyan-400 to-blue-700 text-white rounded-2xl shadow-xl shadow-cyan-500/20 border-2 border-white/30 relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                                                    {/* Shine Effect */}
+                                                    <div className="absolute top-0 right-0 -mt-4 -mr-4 w-20 h-20 bg-white/20 blur-2xl rounded-full"></div>
+                                                    <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-16 h-16 bg-blue-500/30 blur-xl rounded-full"></div>
+
+                                                    <div className="flex items-center gap-2 mb-1 relative z-10">
+                                                        <div className="p-1.5 bg-white/20 rounded-full animate-pulse ring-1 ring-white/40">
+                                                            <Droplets className="h-4 w-4 text-white" />
+                                                        </div>
+                                                        <span className="font-bold text-xs uppercase tracking-widest text-cyan-50 drop-shadow-sm">Irrigation Alert</span>
+                                                    </div>
+                                                    <div className="relative z-10">
+                                                        <span className="font-black text-lg leading-tight block text-white drop-shadow-md">
+                                                            {notification.crop}
+                                                        </span>
+                                                        <div className="flex justify-between items-end mt-2">
+                                                            <span className="text-xs font-semibold text-blue-100 bg-blue-900/30 px-2.5 py-1 rounded-lg border border-white/10">Sy. {notification.survey}</span>
+                                                            <span className="text-[10px] font-bold uppercase tracking-wide text-blue-900 bg-cyan-50 px-2.5 py-1 rounded-full shadow-sm">Due Today</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
                                 </div>
 
                                 <Button
@@ -418,7 +505,10 @@ export default function DashboardPage() {
                             </div>
                         </div>
                     </TabsContent>
-                    <TabsContent value="advisory"> <AdvisoryDashboard crops={farmerCrops} /> </TabsContent>
+                    <TabsContent value="advisory">
+                        {/* Ensure farmerId is passed even if null, though Dashboard handles it */}
+                        <AdvisoryDashboard crops={parcels} farmerId={farmerId || undefined} />
+                    </TabsContent>
                     <TabsContent value="subsidies">                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {schemes.length === 0 ? (
                             <p className="col-span-full text-center text-gray-500">No active schemes found at the moment.</p>
@@ -457,43 +547,43 @@ export default function DashboardPage() {
                     <TabsContent value="weather" className="space-y-8">
                         {/* Daily Forecast Scrollable Strip */}
                         <div className="relative">
-                            <div className="flex gap-4 overflow-x-auto pb-4 px-1 snap-x no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
                                 {weather.map((day, idx) => {
                                     const isToday = idx === 0;
                                     return (
-                                        <Card key={idx} className={`min-w-[150px] md:min-w-[180px] snap-start shrink-0 border-none shadow-sm rounded-2xl transition-all duration-300 hover:-translate-y-1 ${isToday
-                                            ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg ring-4 ring-blue-50 relative overflow-hidden'
+                                        <Card key={idx} className={`border-none shadow-sm rounded-xl transition-all duration-300 hover:-translate-y-1 ${isToday
+                                            ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg ring-2 ring-blue-50 relative overflow-hidden col-span-2 md:col-span-1 lg:col-span-1'
                                             : day.condition.includes('Rain') ? 'bg-blue-50' : 'bg-white'
                                             }`}>
                                             {isToday && (
-                                                <div className="absolute top-0 right-0 p-3 opacity-20">
-                                                    <CloudSun className="h-24 w-24 -mr-6 -mt-6" />
+                                                <div className="absolute top-0 right-0 p-2 opacity-20">
+                                                    <CloudSun className="h-16 w-16 -mr-4 -mt-4" />
                                                 </div>
                                             )}
-                                            <CardContent className="p-4 flex flex-col items-center justify-center text-center py-6 relative z-10 h-full justify-between">
-                                                <div className="flex flex-col items-center">
-                                                    <span className={`text-xs font-bold uppercase tracking-wider mb-2 ${isToday ? 'text-blue-100' : 'text-gray-400'}`}>
+                                            <CardContent className="p-3 flex flex-col items-center justify-center text-center h-full justify-between gap-1">
+                                                <div className="flex flex-col items-center w-full">
+                                                    <span className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isToday ? 'text-blue-100' : 'text-gray-400'}`}>
                                                         {isToday ? 'Today' : day.day}
                                                     </span>
 
-                                                    {day.condition.includes('Sunny') && <Sun className={`h-8 w-8 mb-2 ${isToday ? 'text-yellow-300' : 'text-orange-400'}`} />}
-                                                    {day.condition.includes('Partly') && <CloudSun className={`h-8 w-8 mb-2 ${isToday ? 'text-blue-200' : 'text-gray-400'}`} />}
-                                                    {day.condition.includes('Cloudy') && <Cloud className={`h-8 w-8 mb-2 ${isToday ? 'text-blue-200' : 'text-gray-400'}`} />}
-                                                    {day.condition.includes('Rain') && <CloudRain className={`h-8 w-8 mb-2 ${isToday ? 'text-blue-200' : 'text-blue-500'}`} />}
-                                                    {day.condition.includes('Thunder') && <CloudLightning className={`h-8 w-8 mb-2 ${isToday ? 'text-yellow-200' : 'text-indigo-500'}`} />}
-                                                    {day.condition.includes('Fog') && <CloudFog className={`h-8 w-8 mb-2 ${isToday ? 'text-blue-200' : 'text-gray-400'}`} />}
+                                                    {day.condition.includes('Sunny') && <Sun className={`h-6 w-6 mb-1 ${isToday ? 'text-yellow-300' : 'text-orange-400'}`} />}
+                                                    {day.condition.includes('Partly') && <CloudSun className={`h-6 w-6 mb-1 ${isToday ? 'text-blue-200' : 'text-gray-400'}`} />}
+                                                    {day.condition.includes('Cloudy') && <Cloud className={`h-6 w-6 mb-1 ${isToday ? 'text-blue-200' : 'text-gray-400'}`} />}
+                                                    {day.condition.includes('Rain') && <CloudRain className={`h-6 w-6 mb-1 ${isToday ? 'text-blue-200' : 'text-blue-500'}`} />}
+                                                    {day.condition.includes('Thunder') && <CloudLightning className={`h-6 w-6 mb-1 ${isToday ? 'text-yellow-200' : 'text-indigo-500'}`} />}
+                                                    {day.condition.includes('Fog') && <CloudFog className={`h-6 w-6 mb-1 ${isToday ? 'text-blue-200' : 'text-gray-400'}`} />}
 
-                                                    <span className={`text-2xl font-bold ${isToday ? 'text-white' : 'text-gray-900'}`}>{day.temp}°</span>
+                                                    <span className={`text-xl font-bold ${isToday ? 'text-white' : 'text-gray-900'}`}>{day.temp}°</span>
                                                 </div>
 
-                                                <div className="w-full flex flex-col items-center mt-2 gap-2">
-                                                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${isToday ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
+                                                <div className="w-full flex flex-col items-center gap-1">
+                                                    <span className={`text-[9px] truncate w-full px-1.5 py-0.5 rounded-full whitespace-nowrap ${isToday ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
                                                         }`}>
                                                         {day.condition}
                                                     </span>
 
                                                     {day.alert && day.alert !== 'Normal' && (
-                                                        <Badge variant="destructive" className="w-full justify-center text-[10px] py-0.5 bg-red-500">Alert</Badge>
+                                                        <Badge variant="destructive" className="w-full justify-center text-[9px] py-0 h-4 bg-red-500">Alert</Badge>
                                                     )}
                                                 </div>
                                             </CardContent>
@@ -1052,6 +1142,8 @@ export default function DashboardPage() {
             )}
 
             {/* Display Enrolled Schemes in Tab (Optional: You can add this to the main layout if needed, currently just showing logic) */}
+
+            <AgricultureChatbot />
         </div>
     );
 }

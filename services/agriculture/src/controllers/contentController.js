@@ -109,11 +109,24 @@ const fetchWeather = (url) => {
 
 exports.getWeather = async (req, res) => {
     try {
-        const village = req.query.location || 'Local Village';
+        const locationQuery = req.query.location || 'Paithan';
+        let latitude = 19.48;
+        let longitude = 75.38;
+        let finalLocationName = locationQuery;
 
-        // Paithan (Aurangabad) coordinates
-        const latitude = 19.48;
-        const longitude = 75.38;
+        // Geocoding Step: Get coordinates from location name
+        try {
+            const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationQuery)}&count=1&language=en&format=json`;
+            const geoData = await fetchWeather(geoUrl);
+
+            if (geoData.results && geoData.results.length > 0) {
+                latitude = geoData.results[0].latitude;
+                longitude = geoData.results[0].longitude;
+                finalLocationName = `${geoData.results[0].name}, ${geoData.results[0].admin1 || ''}`;
+            }
+        } catch (geoError) {
+            console.warn('Geocoding failed, using defaults:', geoError.message);
+        }
 
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&current_weather=true&timezone=auto`;
 
@@ -142,36 +155,53 @@ exports.getWeather = async (req, res) => {
             return 'Normal';
         };
 
-        const forecast = data.daily.time.map((date, index) => ({
-            day: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
-            temp: Math.round(data.daily.temperature_2m_max[index]),
-            condition: getWeatherCondition(data.daily.weather_code[index]),
-            rainChance: data.daily.precipitation_probability_max?.[index] || 0,
-            alert: getAlert(data.daily.weather_code[index], data.daily.temperature_2m_max[index])
-        }));
+        const forecast = data.daily.time.map((date, index) => {
+            const d = new Date(date);
+            let dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+            if (index === 0) dayName = 'Today';
+            if (index === 1) dayName = 'Tomorrow';
 
-        // Add current weather to the response if needed, 
-        // but for now keeping the forecast structure compliant with frontend
+            return {
+                day: dayName,
+                temp: Math.round(data.daily.temperature_2m_max[index]),
+                condition: getWeatherCondition(data.daily.weather_code[index]),
+                rainChance: data.daily.precipitation_probability_max?.[index] || 0,
+                alert: getAlert(data.daily.weather_code[index], data.daily.temperature_2m_max[index])
+            };
+        });
 
         res.status(200).json({
             success: true,
             data: {
-                location: village,
-                forecast: forecast.slice(0, 5) // Send next 5 days
+                location: finalLocationName,
+                forecast: forecast.slice(0, 7)
             }
         });
     } catch (error) {
         console.error('Weather Fetch Error:', error.message);
-        // Fallback mock data only if absolutely necessary
+
+        // Dynamic Fallback
+        const fallbackForecast = Array.from({ length: 7 }, (_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() + i);
+            let dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+            if (i === 0) dayName = 'Today';
+            if (i === 1) dayName = 'Tomorrow';
+
+            return {
+                day: dayName,
+                temp: 30 - (i % 3), // Varied temp
+                condition: i === 5 ? 'Rain' : 'Sunny',
+                rainChance: i === 5 ? 60 : 0,
+                alert: i === 5 ? 'Rain Advisory' : 'Normal'
+            };
+        });
+
         res.status(200).json({
             success: true,
             data: {
                 location: req.query.location || 'Paithan',
-                forecast: [
-                    { day: 'Today', temp: 30, condition: 'Sunny', rainChance: 0, alert: 'Normal' },
-                    { day: 'Tomorrow', temp: 29, condition: 'Partly Cloudy', rainChance: 10, alert: 'Normal' },
-                    { day: 'Wed', temp: 28, condition: 'Cloudy', rainChance: 30, alert: 'Normal' }
-                ]
+                forecast: fallbackForecast
             }
         });
     }

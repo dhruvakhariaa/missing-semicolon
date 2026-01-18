@@ -428,60 +428,118 @@ export default function DashboardPage() {
                     </TabsContent>
 
                     {/* Tab: Weather Alerts */}
-                    <TabsContent value="weather">
-                        <div className="grid md:grid-cols-2 gap-8">
-                            {/* Daily Forecast Grid */}
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                {weather.map((day, idx) => (
-                                    <Card key={idx} className={`border-none shadow-sm rounded-2xl ${day.condition.includes('Rain') ? 'bg-blue-50' : 'bg-white'}`}>
-                                        <CardContent className="p-4 flex flex-col items-center justify-center text-center py-8">
-                                            <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">{day.day}</span>
-                                            {day.condition.includes('Sunny') && <Sun className="h-10 w-10 text-orange-400 mb-3" />}
-                                            {day.condition.includes('Cloud') && <CloudSun className="h-10 w-10 text-gray-400 mb-3" />}
-                                            {day.condition.includes('Rain') && <CloudRain className="h-10 w-10 text-blue-500 mb-3" />}
-                                            {day.condition.includes('Thunder') && <CloudLightning className="h-10 w-10 text-indigo-500 mb-3" />}
+                    <TabsContent value="weather" className="space-y-6">
+                        {/* Top Row: Today's Weather + Forecast Scroll */}
+                        <div className="flex flex-col lg:flex-row gap-6">
+                            {/* Prominent 'Today' Card */}
+                            {weather.length > 0 && (
+                                <div className="lg:w-1/3 flex-shrink-0">
+                                    <div className="bg-blue-600 text-white rounded-3xl p-8 shadow-xl h-full flex flex-col justify-between relative overflow-hidden group">
+                                        {/* Background decoration */}
+                                        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 bg-white/20 rounded-full blur-3xl group-hover:bg-white/30 transition-all duration-700"></div>
 
-                                            <span className="text-3xl font-bold text-gray-900">{day.temp}°</span>
-                                            <span className="text-xs font-medium text-gray-500 mt-1 px-2 py-0.5 rounded-full bg-gray-100">{day.condition}</span>
-
-                                            {day.alert && day.alert !== 'Normal' && (
-                                                <div className="mt-4 w-full">
-                                                    <Badge variant="destructive" className="w-full justify-center text-[10px] py-0.5">Alert</Badge>
+                                        <div>
+                                            <div className="flex justify-between items-start">
+                                                <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md border border-white/10">Today</span>
+                                                {weather[0].alert && weather[0].alert !== 'Normal' && (
+                                                    <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase animate-pulse shadow-sm">
+                                                        ⚠️ {weather[0].alert}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="mt-8">
+                                                <div className="flex items-center gap-4">
+                                                    {weather[0].condition.includes('Sunny') ? <Sun className="h-20 w-20 text-yellow-300" /> :
+                                                        weather[0].condition.includes('Rain') ? <CloudRain className="h-20 w-20 text-blue-200" /> :
+                                                            weather[0].condition.includes('Cloud') ? <CloudSun className="h-20 w-20 text-gray-200" /> :
+                                                                <Wind className="h-20 w-20 text-gray-200" />}
+                                                    <div>
+                                                        <h2 className="text-6xl font-bold tracking-tighter">{weather[0].temp}°</h2>
+                                                        <p className="text-xl text-blue-100 font-medium mt-1">{weather[0].condition}</p>
+                                                    </div>
                                                 </div>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
+                                            </div>
+                                        </div>
 
-                            {/* Active Alerts Section */}
-                            <div className="space-y-4">
-                                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                    <AlertTriangle className="h-5 w-5 text-red-500" />
-                                    Active Weather Advisories
-                                </h3>
-                                <div className="bg-red-50 border-none rounded-2xl p-6 relative overflow-hidden">
-                                    <div className="absolute right-0 top-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-red-100 blur-2xl"></div>
-                                    <h4 className="font-bold text-red-900 text-lg relative z-10">Heavy Rainfall Warning</h4>
-                                    <p className="text-red-800/80 text-sm mt-2 relative z-10 leading-relaxed">
-                                        Heavy to very heavy rainfall likely in Aurangabad district over next 24 hours. Postpone chemical spraying operations until further notice.
-                                    </p>
-                                    <div className="mt-4 flex items-center gap-2 text-xs font-bold text-red-900/60 uppercase tracking-wider relative z-10">
-                                        <span>Issued by IMD</span>
-                                        <span>•</span>
-                                        <span>10:30 AM Today</span>
+                                        <div className="mt-8 pt-6 border-t border-white/20 grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <p className="text-blue-200 text-xs uppercase tracking-wider mb-1">Precipitation</p>
+                                                <p className="font-semibold">{weather[0].rainChance}%</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-blue-200 text-xs uppercase tracking-wider mb-1">Humidity</p>
+                                                <p className="font-semibold">64%</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                            )}
 
-                                <div className="bg-blue-50 border-none rounded-2xl p-6">
-                                    <h4 className="font-bold text-blue-900 text-lg flex items-center gap-2 mb-2">
-                                        <Droplets className="h-5 w-5 text-blue-500" />
-                                        Farming Recommendation
-                                    </h4>
-                                    <p className="text-blue-800/80 text-sm leading-relaxed">
-                                        Due to expected rain, pause all irrigation for the next 48 hours. Ensure field drainage channels are clear to prevent waterlogging in cotton and soybean fields.
-                                    </p>
+                            {/* Scrollable Forecast Row */}
+                            <div className="lg:w-2/3 overflow-x-auto pb-4 scrollbar-hide">
+                                <div className="flex gap-4">
+                                    {weather.slice(1).map((day, idx) => (
+                                        <div key={idx} className="min-w-[140px] bg-white border border-gray-100 rounded-3xl p-5 flex flex-col items-center justify-between shadow-sm hover:shadow-md transition-all hover:scale-105 duration-300 group">
+                                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{day.day}</span>
+
+                                            <div className="my-4 group-hover:scale-110 transition-transform duration-300">
+                                                {day.condition.includes('Sunny') && <Sun className="h-10 w-10 text-orange-400" />}
+                                                {day.condition.includes('Cloud') && <CloudSun className="h-10 w-10 text-gray-400" />}
+                                                {day.condition.includes('Rain') && <CloudRain className="h-10 w-10 text-blue-500" />}
+                                                {day.condition.includes('Thunder') && <CloudLightning className="h-10 w-10 text-indigo-500" />}
+                                            </div>
+
+                                            <div className="text-center">
+                                                <span className="text-2xl font-bold text-gray-900 block">{day.temp}°</span>
+                                                <span className="text-[10px] text-gray-500 font-medium px-2 py-1 bg-gray-50 rounded-full mt-2 inline-block whitespace-nowrap overflow-hidden text-ellipsis max-w-[100px]">{day.condition}</span>
+                                            </div>
+
+                                            {day.alert && day.alert !== 'Normal' && (
+                                                <span className="mt-3 text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-bold border border-red-100">Alert</span>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Advisories Grid */}
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="bg-gradient-to-br from-red-50 to-white border border-red-100 rounded-3xl p-8 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 -mr-12 -mt-12 h-40 w-40 rounded-full bg-red-100/50 blur-3xl"></div>
+                                <div className="flex items-start gap-4 mb-4 relative z-10">
+                                    <div className="bg-red-100 p-3 rounded-2xl">
+                                        <AlertTriangle className="h-6 w-6 text-red-600" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-red-900 text-lg">Active Advisory</h4>
+                                        <p className="text-red-600/80 text-xs font-bold uppercase tracking-wide">Heatwave Alert</p>
+                                    </div>
+                                </div>
+                                <p className="text-gray-700 leading-relaxed text-sm relative z-10">
+                                    High temperatures expected. Ensure adequate irrigation for crops. Mulching is recommended to conserve soil moisture. Avoid chemical spraying during peak heat hours (12 PM - 3 PM).
+                                </p>
+                                <div className="mt-6 flex items-center gap-2 text-xs font-bold text-red-900/40 uppercase tracking-wider relative z-10">
+                                    <span>Issued by IMD</span>
+                                    <span>•</span>
+                                    <span>Updated Just Now</span>
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-3xl p-8 relative overflow-hidden">
+                                <div className="absolute bottom-0 left-0 -ml-12 -mb-12 h-40 w-40 rounded-full bg-blue-100/50 blur-3xl"></div>
+                                <div className="flex items-start gap-4 mb-4 relative z-10">
+                                    <div className="bg-blue-100 p-3 rounded-2xl">
+                                        <Droplets className="h-6 w-6 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-blue-900 text-lg">Farming Recommendation</h4>
+                                        <p className="text-blue-600/80 text-xs font-bold uppercase tracking-wide">Irrigation Management</p>
+                                    </div>
+                                </div>
+                                <p className="text-gray-700 leading-relaxed text-sm relative z-10">
+                                    Take precautionary measures for crops based on the active advisory. Ensure proper drainage or moisture conservation as needed. For cotton, ensure soil moisture checks before fertilization.
+                                </p>
                             </div>
                         </div>
                     </TabsContent>
