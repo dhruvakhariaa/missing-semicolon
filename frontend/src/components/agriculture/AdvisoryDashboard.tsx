@@ -95,7 +95,7 @@ export function AdvisoryDashboard({ crops = [], farmerId }: { crops?: any[], far
             {uniqueCrops.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                     {uniqueCrops.map((c: any, i) => (
-                        <span key={i} className="px-3 py-1 bg-green-50 text-green-700 border border-green-200 text-xs font-bold rounded-full uppercase tracking-wide">
+                        <span key={i} className="px-3 py-1 bg-sky-50 text-sky-700 border border-sky-200 text-xs font-bold rounded-full uppercase tracking-wide">
                             {c}
                         </span>
                     ))}
@@ -110,9 +110,9 @@ export function AdvisoryDashboard({ crops = [], farmerId }: { crops?: any[], far
                 ) : advisories.length > 0 ? (
                     advisories.map((advisory, idx) => (
                         <div key={idx} className="bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all rounded-2xl p-5 group relative overflow-hidden">
-                            <div className={`absolute top-0 left-0 w-1 h-full ${advisory.type === 'Disease' ? 'bg-red-500' :
-                                advisory.type === 'Pest' ? 'bg-orange-500' :
-                                    advisory.type === 'Water' ? 'bg-blue-500' : 'bg-emerald-500'
+                            <div className={`absolute top-0 left-0 w-1 h-full ${advisory.type === 'Disease' ? 'bg-blue-600' :
+                                advisory.type === 'Pest' ? 'bg-blue-500' :
+                                    advisory.type === 'Water' ? 'bg-sky-500' : 'bg-sky-400'
                                 }`}></div>
 
                             <div className="flex justify-between items-start mb-3 pl-3">
@@ -120,10 +120,10 @@ export function AdvisoryDashboard({ crops = [], farmerId }: { crops?: any[], far
                                     <h3 className="font-bold text-gray-900 text-lg">{advisory.crop}</h3>
                                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{advisory.stage}</p>
                                 </div>
-                                <span className={`px-3 py-1 text-xs rounded-full font-bold uppercase shadow-sm ${advisory.type === 'Disease' ? 'bg-red-50 text-red-700 border border-red-100' :
-                                    advisory.type === 'Pest' ? 'bg-orange-50 text-orange-700 border border-orange-100' :
-                                        advisory.type === 'Water' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
-                                            'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                                <span className={`px-3 py-1 text-xs rounded-full font-bold uppercase shadow-sm ${advisory.type === 'Disease' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
+                                    advisory.type === 'Pest' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
+                                        advisory.type === 'Water' ? 'bg-sky-50 text-sky-700 border border-sky-100' :
+                                            'bg-sky-50 text-sky-700 border border-sky-100'
                                     }`}>
                                     {advisory.type}
                                 </span>

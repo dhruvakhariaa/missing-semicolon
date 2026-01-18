@@ -87,14 +87,14 @@ export function AgricultureChatbot() {
             {isOpen && (
                 <Card className="w-[350px] h-[500px] mb-4 shadow-2xl border-none flex flex-col pointer-events-auto animate-in slide-in-from-bottom-10 fade-in duration-300">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-green-600 to-emerald-700 p-4 rounded-t-xl flex justify-between items-center text-white shadow-md">
+                    <div className="bg-gradient-to-r from-blue-600 to-sky-700 p-4 rounded-t-xl flex justify-between items-center text-white shadow-md">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-white/20 rounded-full backdrop-blur-sm">
                                 <Bot className="h-5 w-5 text-white" />
                             </div>
                             <div>
                                 <h3 className="font-bold text-sm">Agri-Sahayak AI</h3>
-                                <p className="text-[10px] text-green-100 opacity-90">Context-Aware Support</p>
+                                <p className="text-[10px] text-blue-100 opacity-90">Context-Aware Support</p>
                             </div>
                         </div>
                         <Button
@@ -121,7 +121,7 @@ export function AgricultureChatbot() {
                                         }`}
                                 >
                                     {msg.sender === 'bot' && (
-                                        <p className="text-[10px] font-bold text-green-600 mb-1 flex items-center gap-1">
+                                        <p className="text-[10px] font-bold text-blue-600 mb-1 flex items-center gap-1">
                                             <Bot className="h-3 w-3" /> AI Assistant
                                         </p>
                                     )}
@@ -135,9 +135,9 @@ export function AgricultureChatbot() {
                         {isLoading && (
                             <div className="flex justify-start">
                                 <div className="bg-white p-3 rounded-2xl rounded-bl-none border border-gray-100 shadow-sm flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce"></span>
-                                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce delay-75"></span>
-                                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce delay-150"></span>
+                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></span>
+                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce delay-75"></span>
+                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce delay-150"></span>
                                 </div>
                             </div>
                         )}
@@ -146,7 +146,7 @@ export function AgricultureChatbot() {
 
                     {/* Input Area */}
                     <div className="p-3 bg-white border-t border-gray-100 rounded-b-xl">
-                        <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-full border focus-within:ring-2 ring-green-100 transition-all">
+                        <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-full border focus-within:ring-2 ring-blue-100 transition-all">
                             <input
                                 type="text"
                                 className="flex-1 bg-transparent border-none focus:outline-none px-3 text-sm text-gray-700 placeholder:text-gray-400"
@@ -157,7 +157,7 @@ export function AgricultureChatbot() {
                             />
                             <Button
                                 size="icon"
-                                className="h-8 w-8 rounded-full bg-green-600 hover:bg-green-700 text-white shadow-sm shrink-0"
+                                className="h-8 w-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm shrink-0"
                                 onClick={handleSend}
                                 disabled={isLoading || !inputText.trim()}
                             >
@@ -171,7 +171,7 @@ export function AgricultureChatbot() {
             {/* Toggle Button */}
             <Button
                 size="lg"
-                className={`rounded-full shadow-xl h-14 w-14 p-0 pointer-events-auto transition-all duration-300 ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100 hover:scale-110'} bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white`}
+                className={`rounded-full shadow-xl h-14 w-14 p-0 pointer-events-auto transition-all duration-300 ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100 hover:scale-110'} bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white`}
                 onClick={() => setIsOpen(true)}
             >
                 <MessageCircle className="h-7 w-7" />

@@ -197,7 +197,7 @@ export default function DashboardPage() {
 
                     <div className="relative z-10 max-w-2xl">
                         <div className="inline-flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-sm font-medium mb-6 backdrop-blur-sm border border-white/20">
-                            <span className="w-2 h-2 rounded-full bg-green-400"></span>
+                            <span className="w-2 h-2 rounded-full bg-blue-400"></span>
                             PM-KISAN Enabled
                         </div>
                         <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
@@ -257,49 +257,81 @@ export default function DashboardPage() {
 
                     {/* Tab: My Land & Crops */}
                     <TabsContent value="land" className="space-y-6">
-                        <div className="grid md:grid-cols-3 gap-6">
-                            <Card className="col-span-1 border-none shadow-md bg-white rounded-2xl overflow-hidden">
-                                <CardHeader className="bg-sky-50 pb-8">
-                                    <div className="w-10 h-10 bg-sky-100 rounded-lg flex items-center justify-center mb-4">
-                                        <Leaf className="h-6 w-6 text-sky-600" />
+                        <div className="space-y-8">
+                            {/* Total Holdings Banner - Blue Gradient Design */}
+                            <div className="w-full rounded-3xl bg-gradient-to-r from-blue-500 to-blue-600 p-6 md:p-8 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+                                {/* Background Decor */}
+                                <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
+                                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-64 w-64 rounded-full bg-blue-400/30 blur-3xl"></div>
+
+                                {/* Leaf Icon + Total Holdings */}
+                                <div className="flex items-center gap-6 relative z-10 w-full md:w-auto">
+                                    <div className="h-16 w-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-inner">
+                                        <Leaf className="h-8 w-8 text-white" />
                                     </div>
-                                    <CardTitle className="text-gray-600 text-sm font-medium uppercase tracking-wider">Total Holdings</CardTitle>
-                                    <h3 className="text-4xl font-bold text-sky-900 mt-2 flex items-baseline gap-2">
-                                        {totalAcres} <span className="text-lg font-medium text-gray-500">Acres</span>
-                                    </h3>
-                                </CardHeader>
-                                <CardContent className="pt-6">
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                            <span className="text-gray-600 text-sm">Irrigated</span>
-                                            <span className="font-bold text-gray-900">{irrigatedAcres} Ac</span>
-                                        </div>
-                                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                            <span className="text-gray-600 text-sm">Rainfed</span>
-                                            <span className="font-bold text-gray-900">{rainfedAcres} Ac</span>
+                                    <div>
+                                        <p className="text-xs font-bold uppercase tracking-widest text-blue-100 mb-1">Total Holdings</p>
+                                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
+                                            {totalAcres} <span className="text-xl font-medium text-blue-100">Acres</span>
+                                        </h2>
+                                    </div>
+                                </div>
+
+                                {/* Rainfed / Irrigated Stats - Glassy Block */}
+                                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10 flex items-center gap-8 min-w-[200px] justify-between relative z-10">
+                                    <div>
+                                        <p className="text-xs text-blue-100 font-medium mb-1">Rainfed</p>
+                                        <p className="text-xl font-bold">{rainfedAcres} Ac</p>
+                                    </div>
+                                    <div className="h-8 w-px bg-white/20"></div>
+                                    <div>
+                                        <p className="text-xs text-blue-100 font-medium mb-1">Irrigated</p>
+                                        <p className="text-xl font-bold">{irrigatedAcres} Ac</p>
+                                    </div>
+                                </div>
+
+                                {/* Water Status Alert - Gradient Block */}
+                                <div className="bg-gradient-to-br from-sky-400/30 to-blue-500/30 backdrop-blur-md rounded-xl p-4 border border-white/20 relative z-10 flex items-center gap-4 group cursor-pointer hover:bg-white/20 transition-all">
+                                    <div className="h-10 w-10 bg-sky-400 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                                        <Droplets className="h-5 w-5 text-white" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] uppercase font-bold text-sky-100 tracking-wider">Water Status</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-bold text-white leading-tight">Irrigation Alert</p>
+                                            <Badge className="bg-white/90 text-blue-600 text-[9px] hover:bg-white px-1.5 h-4">DUE TODAY</Badge>
                                         </div>
                                     </div>
-                                    <Button
-                                        className="w-full mt-6 bg-sky-600 hover:bg-sky-700 text-white rounded-xl py-6"
-                                        onClick={() => setIsAddParcelOpen(true)}
-                                    >
-                                        Add New Parcel
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                            <div className="col-span-1 md:col-span-2">
-                                <h3 className="font-semibold text-lg mb-4 text-gray-900 flex items-center gap-2">
-                                    <Tractor className="h-5 w-5 text-sky-600" />
+                                </div>
+
+                                {/* Add Parcel Button */}
+                                <Button
+                                    className="bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-bold px-6 py-6 rounded-xl shadow-lg relative z-10 transition-transform active:scale-95"
+                                    onClick={() => setIsAddParcelOpen(true)}
+                                >
+                                    + Add New Parcel
+                                </Button>
+                            </div>
+
+                            {/* Active Parcels Header */}
+                            <div>
+                                <h3 className="font-semibold text-lg mb-4 text-gray-900 flex items-center gap-2 px-1">
+                                    <Tractor className="h-5 w-5 text-blue-600" />
                                     Active Parcels
+                                    <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold ml-2">{parcels.length} Found</span>
                                 </h3>
-                                <div className="grid gap-4 md:grid-cols-2">
+
+                                <div className="grid gap-6 md:grid-cols-2">
                                     {parcels.length === 0 ? (
-                                        <div className="col-span-full flex flex-col items-center justify-center p-12 border-2 border-dashed border-gray-200 rounded-2xl bg-white text-gray-500">
-                                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                                                <Plus className="h-8 w-8 text-gray-400" />
+                                        <div className="col-span-full flex flex-col items-center justify-center p-16 border-2 border-dashed border-gray-200 rounded-[2rem] bg-white text-gray-400 space-y-4">
+                                            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center">
+                                                <Plus className="h-8 w-8 text-gray-300" />
                                             </div>
-                                            <p className="font-medium">No land parcels found</p>
-                                            <p className="text-sm mt-1">Add your first parcel to get started</p>
+                                            <div className="text-center">
+                                                <p className="font-semibold text-gray-600 text-lg">No land parcels found</p>
+                                                <p className="text-sm">Add your first parcel to see analytics here</p>
+                                            </div>
+                                            <Button variant="outline" onClick={() => setIsAddParcelOpen(true)}>Add Parcel</Button>
                                         </div>
                                     ) : (
                                         parcels.map((parcel, idx) => {
@@ -308,81 +340,88 @@ export default function DashboardPage() {
                                                 : 0;
 
                                             return (
-                                                <Card key={idx} className="hover:shadow-lg transition-shadow border-gray-100 shadow-sm rounded-xl overflow-hidden group bg-white">
-                                                    <CardHeader className="pb-3 border-b border-gray-50 bg-gray-50/50">
-                                                        <div className="flex justify-between items-center">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="h-8 w-8 bg-sky-100 rounded-lg flex items-center justify-center text-sky-700 font-bold text-xs">
-                                                                    {parcel.surveyNumber.slice(0, 2)}
-                                                                </div>
-                                                                <div>
-                                                                    <h4 className="font-semibold text-gray-900 leading-none">Sy. {parcel.surveyNumber}</h4>
-                                                                    <p className="text-xs text-gray-500 mt-1">{parcel.village}</p>
-                                                                </div>
-                                                            </div>
-                                                            <Badge className="bg-sky-100 text-sky-800 hover:bg-sky-200 border-none px-3 py-1">Vegetative</Badge>
-                                                        </div>
-                                                    </CardHeader>
-                                                    <CardContent className="pt-4 space-y-4">
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            <div>
-                                                                <p className="text-xs text-gray-500 mb-1">Crop Type</p>
-                                                                <p className="font-semibold text-gray-900 flex items-center gap-2">
-                                                                    <Sprout className="h-3 w-3 text-sky-500" />
-                                                                    {parcel.currentCrop}
-                                                                </p>
+                                                <div key={idx} className="bg-white rounded-[2rem] p-6 shadow-sm border border-blue-50 hover:shadow-xl transition-all duration-300 group relative overflow-visible">
+                                                    {/* Decorative top-right blur */}
+                                                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                                                    {/* Header: Index, Sy No, Badge */}
+                                                    <div className="flex justify-between items-start mb-6 relative z-10">
+                                                        <div className="flex items-start gap-4">
+                                                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-50 to-white border border-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg shadow-sm">
+                                                                {(idx + 1).toString().padStart(2, '0')}
                                                             </div>
                                                             <div>
-                                                                <p className="text-xs text-gray-500 mb-1">Area</p>
-                                                                <p className="font-semibold text-gray-900 flex items-center gap-2">
-                                                                    <Leaf className="h-3 w-3 text-sky-500" />
-                                                                    {parcel.area} Ac
-                                                                </p>
+                                                                <h4 className="font-bold text-gray-900 text-xl leading-tight">Sy. {parcel.surveyNumber}</h4>
+                                                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">{parcel.village}</p>
                                                             </div>
                                                         </div>
+                                                        <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-xs font-bold uppercase tracking-wide">
+                                                            Vegetative
+                                                        </span>
+                                                    </div>
 
-                                                        <div className="bg-sky-50 rounded-lg p-3">
-                                                            <div className="flex justify-between items-center">
-                                                                <div>
-                                                                    <p className="text-xs text-sky-700 mb-1">Sowing Progress</p>
-                                                                    <p className="text-sm font-bold text-sky-900">
-                                                                        {daysSown >= 0 ? `${daysSown} Days` : 'Not Sown'}
-                                                                    </p>
-                                                                </div>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setSelectedParcel(parcel);
-                                                                        setEditSowingDate(parcel.sowingDate ? parcel.sowingDate.split('T')[0] : '');
-                                                                        setIsEditParcelOpen(true);
-                                                                    }}
-                                                                    className="text-white bg-sky-600 hover:bg-sky-700 rounded-full p-2 w-8 h-8 flex items-center justify-center transition-colors shadow-sm"
-                                                                >
-                                                                    <div className="text-xs">✎</div>
-                                                                </button>
+                                                    {/* Metrics Row */}
+                                                    <div className="grid grid-cols-2 gap-4 mb-6 relative z-10">
+                                                        <div className="bg-orange-50/50 rounded-2xl p-4 border border-orange-100/50">
+                                                            <p className="text-[10px] font-bold text-orange-400 uppercase tracking-wider mb-2">Crop Type</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <Sprout className="h-5 w-5 text-orange-500" />
+                                                                <span className="text-lg font-bold text-gray-900">{parcel.currentCrop}</span>
                                                             </div>
-                                                            <Progress value={Math.min((daysSown / 120) * 100, 100)} className="h-1.5 mt-2 bg-sky-200" />
                                                         </div>
+                                                        <div className="bg-blue-50/50 rounded-2xl p-4 border border-blue-100/50">
+                                                            <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-2">Area</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <Leaf className="h-5 w-5 text-blue-500" />
+                                                                <span className="text-lg font-bold text-gray-900">{parcel.area} Ac</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-                                                        <div className="flex gap-2">
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline"
-                                                                className="flex-1 text-xs border-gray-200 hover:bg-gray-50 text-gray-600 rounded-lg h-9"
-                                                                onClick={() => { setSelectedParcel(parcel); setIsSoilCardOpen(true); }}
+                                                    {/* Sowing Progress */}
+                                                    <div className="mb-8 relative z-10">
+                                                        <div className="flex justify-between items-end mb-2">
+                                                            <div>
+                                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sowing Progress</p>
+                                                                <p className="text-2xl font-bold text-blue-900 mt-1">{daysSown} <span className="text-sm font-medium text-gray-400">Days</span></p>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => {
+                                                                    setSelectedParcel(parcel);
+                                                                    setEditSowingDate(parcel.sowingDate ? parcel.sowingDate.split('T')[0] : '');
+                                                                    setIsEditParcelOpen(true);
+                                                                }}
+                                                                className="text-gray-400 hover:text-blue-600 text-xs font-medium transition-colors"
                                                             >
-                                                                Soil Card
-                                                            </Button>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline"
-                                                                className="flex-1 text-xs border-gray-200 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 text-gray-600 rounded-lg h-9"
-                                                                onClick={() => { setSelectedParcel(parcel); setIsIrrigationModalOpen(true); }}
-                                                            >
-                                                                Irrigation
-                                                            </Button>
+                                                                Edit
+                                                            </button>
                                                         </div>
-                                                    </CardContent>
-                                                </Card>
+                                                        <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                                                            <div
+                                                                className="h-full bg-blue-600 rounded-full transition-all duration-1000 ease-out"
+                                                                style={{ width: `${Math.min((daysSown / 120) * 100, 100)}%` }}
+                                                            ></div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Footer Actions */}
+                                                    <div className="flex gap-3 relative z-10">
+                                                        <button
+                                                            onClick={() => { setSelectedParcel(parcel); setIsSoilCardOpen(true); }}
+                                                            className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-semibold text-sm hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-2 group/btn"
+                                                        >
+                                                            <Leaf className="h-4 w-4 text-gray-400 group-hover/btn:text-blue-500 transition-colors" />
+                                                            Soil Card
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setSelectedParcel(parcel); setIsIrrigationModalOpen(true); }}
+                                                            className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-semibold text-sm hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-2 group/btn"
+                                                        >
+                                                            <Droplets className="h-4 w-4 text-gray-400 group-hover/btn:text-blue-500 transition-colors" />
+                                                            Irrigation
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             );
                                         })
                                     )}
@@ -557,7 +596,7 @@ export default function DashboardPage() {
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Survey No.</label>
                                     <input
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         value={newParcel.surveyNumber}
                                         onChange={e => setNewParcel({ ...newParcel, surveyNumber: e.target.value })}
                                         placeholder="e.g. 102/A"
@@ -567,7 +606,7 @@ export default function DashboardPage() {
                                     <label className="text-sm font-medium">Area (Acres)</label>
                                     <input
                                         type="number"
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         value={newParcel.area}
                                         onChange={e => setNewParcel({ ...newParcel, area: e.target.value })}
                                         placeholder="0.0"
@@ -577,7 +616,7 @@ export default function DashboardPage() {
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Village</label>
                                 <input
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={newParcel.village}
                                     onChange={e => setNewParcel({ ...newParcel, village: e.target.value })}
                                     placeholder="Village Name"
@@ -586,7 +625,7 @@ export default function DashboardPage() {
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Current Crop</label>
                                 <input
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={newParcel.currentCrop}
                                     onChange={e => setNewParcel({ ...newParcel, currentCrop: e.target.value })}
                                     placeholder="e.g. Wheat, Cotton"
@@ -601,7 +640,7 @@ export default function DashboardPage() {
                                 </button>
                                 <button
                                     onClick={handleAddParcel}
-                                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-medium"
+                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"
                                 >
                                     Save Parcel
                                 </button>
@@ -629,7 +668,7 @@ export default function DashboardPage() {
                                 <Button size="sm" variant="outline" onClick={() => setIsEditParcelOpen(false)}>Cancel</Button>
                                 <Button
                                     size="sm"
-                                    className="bg-green-600 text-white"
+                                    className="bg-blue-600 text-white"
                                     onClick={async () => {
                                         await updateParcel(selectedParcel._id, {
                                             sowingDate: editSowingDate || null
@@ -651,7 +690,7 @@ export default function DashboardPage() {
                     <div className="bg-white rounded-lg p-6 max-w-md w-full text-gray-900 shadow-xl">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-bold">Soil Health Card</h3>
-                            <div className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Healthy</div>
+                            <div className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Healthy</div>
                         </div>
 
                         <div className="space-y-4">
@@ -689,7 +728,7 @@ export default function DashboardPage() {
 
                             <div className="flex justify-end gap-2 mt-4">
                                 <Button variant="outline" size="sm" onClick={() => setIsSoilCardOpen(false)}>Close</Button>
-                                <Button size="sm" className="bg-green-600 text-white" onClick={() => { /* Open edit for soil logic */ }}>Update Data</Button>
+                                <Button size="sm" className="bg-blue-600 text-white" onClick={() => { /* Open edit for soil logic */ }}>Update Data</Button>
                             </div>
                         </div>
                     </div>
