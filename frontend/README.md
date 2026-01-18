@@ -1,60 +1,36 @@
-# Frontend - React with Next.js
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Purpose
-User interface layer providing:
-- Citizen Portal: For end users accessing services
-- Admin Dashboard: For government officials monitoring system
-- Service Provider Interface: For healthcare providers, agriculture experts
+## Getting Started
 
-## Technology Stack
-- **Framework**: React with Next.js for SEO and SSR
-- **Styling**: Tailwind CSS
-- **Components**: shadcn/ui component library
-- **State Management**: React Context API or Zustand
-- **Internationalization**: i18next (English, Hindi, Gujarati)
-- **Charts**: Recharts or Chart.js
+First, run the development server:
 
-## Characteristics
-- Responsive design for mobile and desktop
-- Progressive Web App (PWA) capabilities
-- Multi-language support
-- Accessibility compliant (WCAG 2.1)
-
-## Structure
-```
-frontend/
-├── public/                 # Static assets
-│   ├── icons/
-│   ├── images/
-│   └── locales/           # i18n translation files
-├── src/
-│   ├── app/               # Next.js App Router pages
-│   │   ├── (auth)/        # Auth pages (login, register)
-│   │   ├── (citizen)/     # Citizen portal pages
-│   │   ├── (admin)/       # Admin dashboard pages
-│   │   └── (provider)/    # Service provider pages
-│   ├── components/        # Reusable UI components
-│   │   ├── ui/            # shadcn/ui components
-│   │   ├── common/        # Shared components (Header, Footer, etc.)
-│   │   ├── forms/         # Form components
-│   │   ├── healthcare/    # Healthcare-specific components
-│   │   ├── agriculture/   # Agriculture-specific components
-│   │   ├── urban/         # Urban-specific components
-│   │   └── dashboard/     # Dashboard/monitoring components
-│   ├── hooks/             # Custom React hooks
-│   ├── lib/               # Utility libraries
-│   ├── services/          # API service layer
-│   ├── store/             # State management (Zustand/Context)
-│   ├── styles/            # Global styles and Tailwind config
-│   └── types/             # TypeScript type definitions
-├── Dockerfile
-└── package.json
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## Key Interfaces
-1. Landing Page - Service discovery
-2. Citizen Dashboard - Unified view
-3. Healthcare Appointment Booking
-4. Agriculture Advisory Portal
-5. Urban Complaint Management
-6. Admin Monitoring Dashboard
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.

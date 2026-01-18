@@ -1,6 +1,19 @@
 import type { Metadata } from 'next'
+import { Inter, DM_Sans } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
+
+const inter = Inter({
+    subsets: ['latin'],
+    variable: '--font-inter',
+    display: 'swap',
+})
+
+const dmSans = DM_Sans({
+    subsets: ['latin'],
+    variable: '--font-dm-sans',
+    display: 'swap',
+})
 
 export const metadata: Metadata = {
     title: 'Jan Sewa Portal | One Platform. Every Service. For Every Citizen.',
@@ -21,12 +34,8 @@ export default function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        <html lang="en" className="scroll-smooth">
-            <head>
-                <link rel="preconnect" href="https://fonts.googleapis.com" />
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-            </head>
-            <body className="min-h-screen bg-brand-50 custom-scrollbar">
+        <html lang="en" className={`${inter.variable} ${dmSans.variable} scroll-smooth`}>
+            <body className="min-h-screen bg-brand-50 font-sans custom-scrollbar">
                 <AuthProvider>
                     {children}
                 </AuthProvider>
