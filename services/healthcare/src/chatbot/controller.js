@@ -8,21 +8,25 @@ const { v4: uuidv4 } = require('uuid');
  */
 const chat = async (req, res) => {
     try {
-        const { message, sessionId } = req.body;
+        const { message, sessionId, language } = req.body;
 
         if (!message) {
-            return res.status(400).json({ error: 'Message is required' });
+            return res.status(400).json({
+                success: false,
+                error: 'Message is required'
+            });
         }
 
-        // Use provided sessionId or generate a new one (guest user)
-        const activeSessionId = sessionId || uuidv4();
+        // Generate or use provided session ID
+        const currentSessionId = sessionId || uuidv4();
 
-        const response = await chatService.generateResponse(activeSessionId, message);
+        // Get response from chatbot service with language preference
+        const response = await chatService.generateResponse(currentSessionId, message, language || 'english');
 
         res.json({
             success: true,
             message: response,
-            sessionId: activeSessionId
+            sessionId: currentSessionId
         });
     } catch (error) {
         console.error('Chat Controller Error:', error);

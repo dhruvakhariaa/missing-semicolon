@@ -8,8 +8,8 @@ export default function Header() {
 
     const navLinks = [
         { href: '/', label: 'Healthcare', active: true },
-        { href: '#', label: 'Agriculture', active: false },
-        { href: '#', label: 'Urban Development', active: false },
+        { href: '/agriculture', label: 'Agriculture', active: false },
+        { href: '/urban', label: 'Urban Development', active: false },
     ];
 
     return (

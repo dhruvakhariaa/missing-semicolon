@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Building2, Stethoscope, Calendar, User, ArrowRight, Video, FileText } from 'lucide-react';
+import { Building2, Stethoscope, Calendar, User, ArrowRight, Video, FileText, Brain } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -47,7 +47,30 @@ export default function Home() {
         {/* Feature Cards Grid (4x2 Layout) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
-          {/* 1. Departments */}
+          {/* 1. AI Health Checker - NEW! */}
+          <Link href="/ai-health-checker" className="group">
+            <div className="aspect-[4/5] bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-6 flex flex-col justify-between hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -ml-12 -mb-12"></div>
+              <div className="relative z-10">
+                <div className="h-14 w-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
+                  <Brain className="h-7 w-7" />
+                </div>
+                <span className="inline-block px-2 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-bold text-white mb-2">
+                  NEW! AI Powered
+                </span>
+              </div>
+              <div className="relative z-10">
+                <h3 className="text-xl font-bold text-white">AI Health Checker</h3>
+                <p className="text-sm text-white/80 mt-2">Get instant disease predictions from symptoms.</p>
+                <div className="mt-4 flex items-center text-sm font-bold text-white gap-1 border-t border-white/20 pt-4">
+                  Try Now <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          {/* 2. Departments */}
           <Link href="/departments" className="group">
             <div className="aspect-[4/5] bg-white rounded-2xl border border-gov-blue-100 p-6 flex flex-col justify-between hover:shadow-xl hover:border-gov-blue-300 transition-all cursor-pointer relative overflow-hidden">
               <div className="h-14 w-14 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">

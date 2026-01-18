@@ -4,7 +4,8 @@
   "description": "National-Scale Digital Public Infrastructure for Seamless Service Delivery",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npm run dev:gateway\" \"npm run dev:healthcare\" \"npm run dev:agriculture\" \"npm run dev:urban\" \"npm run dev:monitoring\" \"npm run dev:frontend\"",
+    "dev": "concurrently -n \"AI,BACKEND,FRONTEND\" -c \"bgGreen.bold,bgBlue.bold,bgMagenta.bold\" \"npm run dev:ai\" \"npm run dev:healthcare\" \"npm run dev:frontend\"",
+    "dev:ai": "cd services/healthcare/ai && python3 app.py",
     "dev:gateway": "cd services/api-gateway && npm run dev",
     "dev:healthcare": "cd services/healthcare && npm run dev",
     "dev:agriculture": "cd services/agriculture && npm run dev",

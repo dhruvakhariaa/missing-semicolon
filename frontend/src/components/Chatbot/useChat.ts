@@ -9,18 +9,14 @@ export interface Message {
     timestamp: Date;
 }
 
-export const useChat = () => {
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            id: '1',
-            text: 'Namaste! I am your Jan Seva health assistant. How can I help you today?',
-            sender: 'bot',
-            timestamp: new Date()
-        }
-    ]);
+export type Language = 'english' | 'hindi' | 'gujarati';
+
+export function useChat() {
+    const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
-    const [sessionId, setSessionId] = useState<string | null>(null);
+    const [language, setLanguage] = useState<Language>('english');
+    const sessionIdRef = useRef<string | null>(null);
 
     const toggleChat = () => setIsOpen(!isOpen);
 
@@ -43,7 +39,8 @@ export const useChat = () => {
             // reusing the logic from api.ts effectively:
             const response = await api.post('/chat', {
                 message: text,
-                sessionId
+                sessionId: sessionIdRef.current,
+                language: language
             });
 
             if (response.data.success) {
@@ -54,8 +51,8 @@ export const useChat = () => {
                     timestamp: new Date()
                 };
                 setMessages(prev => [...prev, newBotMessage]);
-                if (response.data.sessionId && !sessionId) {
-                    setSessionId(response.data.sessionId);
+                if (response.data.sessionId && !sessionIdRef.current) {
+                    sessionIdRef.current = response.data.sessionId;
                 }
             }
         } catch (error) {
@@ -76,6 +73,8 @@ export const useChat = () => {
         messages,
         isLoading,
         isOpen,
+        language,
+        setLanguage,
         toggleChat,
         sendMessage
     };

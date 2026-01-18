@@ -74,6 +74,10 @@ app.use((req, res, next) => {
 // Mount all routes under /api/healthcare
 app.use('/api/healthcare', routes);
 
+// AI Disease Prediction routes
+const predictionRoutes = require('./routes/prediction');
+app.use('/api/healthcare/ai', predictionRoutes);
+
 // Root health check
 app.get('/', (req, res) => {
     res.json({
