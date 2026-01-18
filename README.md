@@ -4,16 +4,18 @@
 
 A comprehensive digital infrastructure platform supporting multiple public services (Healthcare, Agriculture, Urban) through a shared, modular, and scalable microservices architecture.
 
+![Jan Sewa Portal - Landing Page](docs/diagrams/landing_page.png)
+
 ---
 
 ## 📋 Table of Contents
 
 - [Project Overview](#-project-overview)
 - [Features](#-features)
+- [System Architecture](#-system-architecture)
+- [AI-Powered Health Checker](#-ai-powered-health-checker)
 - [Tech Stack](#-tech-stack)
-- [Architecture](#-architecture)
 - [Project Structure](#-project-structure)
-- [Prerequisites](#-prerequisites)
 - [Setup & Installation](#-setup--installation)
 - [Environment Variables](#-environment-variables)
 - [Running Locally](#-running-locally)
@@ -43,6 +45,7 @@ A unified microservices-based platform with:
 - Single sign-on across all services
 - Event-driven architecture for real-time updates
 - Built-in scalability through load balancing and caching
+- AI-powered disease prediction for healthcare
 - Comprehensive monitoring and analytics dashboard
 
 ---
@@ -65,6 +68,7 @@ A unified microservices-based platform with:
 - Patient registration and profile management
 - Appointment scheduling with availability checking
 - Doctor/department-based booking
+- **AI-Powered Disease Prediction** (see below)
 - Appointment reminders and notifications
 
 #### 🌾 Agriculture Service
@@ -88,45 +92,13 @@ A unified microservices-based platform with:
 
 ---
 
-## 🛠️ Tech Stack
+## 🏗️ System Architecture
 
-### Frontend
-| Technology | Purpose |
-|------------|---------|
-| Next.js 14 | React framework with SSR/SSG |
-| React 18 | UI component library |
-| TypeScript | Type-safe development |
-| Tailwind CSS | Utility-first styling |
-| Framer Motion | Animations and transitions |
-| Radix UI | Accessible UI primitives |
-| Lucide React | Icon library |
-| next-intl | Internationalization (i18n) |
+Our platform is built on a robust microservices architecture that ensures scalability, fault tolerance, and independent deployment of services.
 
-### Backend
-| Technology | Purpose |
-|------------|---------|
-| Node.js 18+ | JavaScript runtime |
-| Express.js | Web framework for microservices |
-| Mongoose | MongoDB ODM |
-| JWT | Stateless authentication |
-| bcryptjs | Password hashing |
-| express-validator | Input validation |
-| express-rate-limit | Rate limiting |
-| Winston | Structured logging |
+![System Architecture](docs/diagrams/system_architecture.png)
 
-### Infrastructure
-| Technology | Purpose |
-|------------|---------|
-| MongoDB 7.0 | Primary database (per-service) |
-| Redis 7.2 | Caching and rate limiting |
-| RabbitMQ 3.12 | Message broker for event-driven architecture |
-| MinIO | S3-compatible object storage |
-| Nginx | Reverse proxy and load balancer |
-| Docker & Docker Compose | Containerization and orchestration |
-
----
-
-## 🏗️ Architecture
+### Architecture Highlights
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -164,15 +136,87 @@ A unified microservices-based platform with:
 └──────────────┘        └──────────────┘
 ```
 
+### Key Design Patterns
+- **Database per Service**: Each microservice owns its data
+- **Event-Driven Communication**: Services communicate via RabbitMQ
+- **Circuit Breaker**: Prevents cascading failures
+- **Service Discovery**: Dynamic registration with health checks
+
 ---
 
-## 📁 Project Structure
+## 🤖 AI-Powered Health Checker
+
+One of our innovative features is an **AI-powered disease prediction system** integrated into the Healthcare service. This intelligent bot helps citizens get preliminary health assessments based on their symptoms.
+
+![AI Health Checker](docs/diagrams/ai_health_checker.png)
+
+### How It Works
+
+1. **Symptom Input**: Users describe their symptoms through an intuitive chat interface
+2. **AI Analysis**: Our ML model analyzes the symptoms against a trained dataset of diseases
+3. **Disease Prediction**: The system provides potential diagnoses with confidence scores
+4. **Recommendations**: Users receive guidance on next steps and specialist referrals
+
+### Features
+- 🔍 **Symptom-based Analysis**: Input multiple symptoms for accurate prediction
+- 📊 **Confidence Scores**: Each prediction includes a reliability percentage
+- 🏥 **Doctor Recommendations**: Get matched with relevant specialists
+- 🌐 **Multi-language Support**: Available in English, Hindi, and Gujarati
+- ⚡ **Real-time Results**: Instant predictions powered by optimized ML models
+
+### Use Cases
+- Preliminary health screening before hospital visits
+- Rural healthcare accessibility
+- Reducing burden on healthcare facilities
+- Emergency symptom assessment
+
+---
+
+## �️ Tech Stack
+
+### Frontend
+| Technology | Purpose |
+|------------|---------|
+| Next.js 14 | React framework with SSR/SSG |
+| React 18 | UI component library |
+| TypeScript | Type-safe development |
+| Tailwind CSS | Utility-first styling |
+| Framer Motion | Animations and transitions |
+| Radix UI | Accessible UI primitives |
+| Lucide React | Icon library |
+| next-intl | Internationalization (i18n) |
+
+### Backend
+| Technology | Purpose |
+|------------|---------|
+| Node.js 18+ | JavaScript runtime |
+| Express.js | Web framework for microservices |
+| Mongoose | MongoDB ODM |
+| JWT | Stateless authentication |
+| bcryptjs | Password hashing |
+| express-validator | Input validation |
+| express-rate-limit | Rate limiting |
+| Winston | Structured logging |
+
+### Infrastructure
+| Technology | Purpose |
+|------------|---------|
+| MongoDB 7.0 | Primary database (per-service) |
+| Redis 7.2 | Caching and rate limiting |
+| RabbitMQ 3.12 | Message broker for event-driven architecture |
+| MinIO | S3-compatible object storage |
+| Nginx | Reverse proxy and load balancer |
+| Docker & Docker Compose | Containerization and orchestration |
+
+---
+
+## �📁 Project Structure
 
 ```
 service-delivery-platform/
 ├── services/                   # Backend Microservices
 │   ├── api-gateway/           # Central entry point, auth, routing, load balancing
-│   ├── healthcare/            # Appointments, patients, doctors
+│   ├── healthcare/            # Appointments, patients, doctors, AI health checker
 │   ├── agriculture/           # Farmers, schemes, advisories
 │   ├── urban/                 # Complaints, departments, tracking
 │   └── monitoring/            # System metrics, health, analytics
@@ -181,6 +225,7 @@ service-delivery-platform/
 │   └── src/
 │       ├── app/               # Next.js App Router pages
 │       ├── components/        # Reusable UI components
+│       ├── hooks/             # Custom React hooks
 │       ├── services/          # API service layer
 │       └── lib/               # Utilities
 ├── packages/                   # Shared Code
@@ -189,6 +234,9 @@ service-delivery-platform/
 ├── scripts/                    # Utility scripts (seeding, etc.)
 ├── nginx/                      # Nginx configuration
 ├── docs/                       # Documentation
+│   ├── api/                   # API documentation
+│   ├── architecture/          # Architecture docs
+│   └── diagrams/              # Visual diagrams
 ├── docker-compose.yml          # All services orchestration
 ├── package.json                # Root package (workspaces)
 └── .env.example                # Environment template
@@ -196,20 +244,16 @@ service-delivery-platform/
 
 ---
 
-## 📋 Prerequisites
+## � Setup & Installation
 
-Before you begin, ensure you have the following installed:
+### Prerequisites
 
-| Requirement | Version | Download |
-|------------|---------|----------|
-| Node.js | 18.0.0 or higher | [nodejs.org](https://nodejs.org/) |
-| Docker | Latest | [docker.com](https://www.docker.com/) |
-| Docker Compose | Latest (included with Docker Desktop) | [docker.com](https://www.docker.com/) |
-| Git | Latest | [git-scm.com](https://git-scm.com/) |
-
----
-
-## 🚀 Setup & Installation
+| Requirement | Version |
+|------------|---------|
+| Node.js | 18.0.0+ |
+| Docker | Latest |
+| Docker Compose | Latest |
+| Git | Latest |
 
 ### Step 1: Clone the Repository
 
@@ -224,106 +268,54 @@ cd jan-sewa-portal
 # Windows (Command Prompt)
 copy .env.example .env
 
-# Windows (PowerShell)
-Copy-Item .env.example .env
-
-# macOS/Linux
+# Windows (PowerShell) / macOS / Linux
 cp .env.example .env
 ```
 
 ### Step 3: Install Dependencies
 
 ```bash
-# Install all dependencies (root + services + frontend)
 npm run install:all
-```
-
-**Or install individually:**
-
-```bash
-# Root dependencies
-npm install
-
-# Service dependencies
-npm run install:services
-
-# Frontend dependencies
-npm run install:frontend
 ```
 
 ---
 
 ## 🔐 Environment Variables
 
-Copy `.env.example` to `.env` and configure the following variables:
+Copy `.env.example` to `.env` and configure the following:
 
 ```env
-# ===========================================
 # Node Environment
-# ===========================================
 NODE_ENV=development
 
-# ===========================================
-# API Gateway Configuration
-# ===========================================
-API_GATEWAY_PORT=3000
-API_GATEWAY_HOST=localhost
-
-# JWT Configuration
+# API Gateway
+API_GATEWAY_PORT=8000
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
 JWT_EXPIRES_IN=24h
-JWT_REFRESH_EXPIRES_IN=7d
 
-# Rate Limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
-
-# ===========================================
-# MongoDB Configuration
-# ===========================================
+# MongoDB
 MONGODB_URI=mongodb://localhost:27017
 MONGODB_DB_PREFIX=sdp_
 
-# ===========================================
-# Redis Configuration
-# ===========================================
+# Redis
 REDIS_HOST=localhost
 REDIS_PORT=6379
-REDIS_PASSWORD=
-REDIS_DB=0
 REDIS_CACHE_TTL=300
 
-# ===========================================
-# RabbitMQ Configuration
-# ===========================================
+# RabbitMQ
 RABBITMQ_URL=amqp://guest:guest@localhost:5672
-RABBITMQ_EXCHANGE=sdp.events
 
-# ===========================================
 # Microservices Ports
-# ===========================================
 HEALTHCARE_SERVICE_PORT=3001
 AGRICULTURE_SERVICE_PORT=3002
 URBAN_SERVICE_PORT=3003
 MONITORING_SERVICE_PORT=3004
 
-# ===========================================
-# Frontend Configuration
-# ===========================================
-VITE_API_BASE_URL=http://localhost:3000/api
-VITE_WS_URL=ws://localhost:3000
+# Frontend
+VITE_API_BASE_URL=http://localhost:8000/api
 
-# ===========================================
-# CORS Configuration
-# ===========================================
-CORS_ORIGIN=http://localhost:5173
-CORS_CREDENTIALS=true
-
-# ===========================================
-# Encryption (For sensitive data)
-# ===========================================
-ENCRYPTION_KEY=your-32-byte-encryption-key-here
-ENCRYPTION_IV=your-16-byte-iv-here
+# CORS
+CORS_ORIGIN=http://localhost:3000
 ```
 
 > ⚠️ **Important**: Never commit `.env` files with real secrets to version control!
@@ -334,51 +326,31 @@ ENCRYPTION_IV=your-16-byte-iv-here
 
 ### Option 1: Using Docker (Recommended)
 
-**Start all services with Docker Compose:**
-
 ```bash
 # Build and start all containers
 docker-compose up --build
 
 # Or run in detached mode
 docker-compose up -d --build
-```
 
-**Stop all services:**
-
-```bash
+# Stop all services
 docker-compose down
 ```
 
 ### Option 2: Manual Development Mode
 
-**Step 1: Start Infrastructure Services (MongoDB, Redis, RabbitMQ)**
-
 ```bash
+# Step 1: Start Infrastructure
 docker-compose up -d mongodb redis rabbitmq minio
-```
 
-**Step 2: Start All Microservices + Frontend**
-
-```bash
+# Step 2: Start All Services
 npm run dev
-```
 
-This starts all services concurrently:
-- API Gateway: http://localhost:8000
-- Healthcare Service: http://localhost:3001
-- Agriculture Service: http://localhost:3002
-- Urban Service: http://localhost:3003
-- Monitoring Service: http://localhost:3004
-- Frontend: http://localhost:3000
-
-**Step 3: Seed the Database (Optional)**
-
-```bash
+# Step 3: Seed Database (Optional)
 npm run seed
 ```
 
-### Service Ports Summary
+### Service Ports
 
 | Service | Port | URL |
 |---------|------|-----|
@@ -390,18 +362,15 @@ npm run seed
 | Monitoring Service | 3004 | http://localhost:3004 |
 | MongoDB | 27017 | mongodb://localhost:27017 |
 | Redis | 6342 | redis://localhost:6342 |
-| RabbitMQ | 5672, 15672 | amqp://localhost:5672 |
+| RabbitMQ | 5672 | amqp://localhost:5672 |
 | RabbitMQ UI | 15672 | http://localhost:15672 |
-| MinIO | 9000, 9001 | http://localhost:9000 |
 | MinIO Console | 9001 | http://localhost:9001 |
 
 ---
 
 ## 🔑 Test Credentials
 
-Use these credentials for testing the application:
-
-### Pre-seeded Users (after running `npm run seed`)
+### Pre-seeded Users (after `npm run seed`)
 
 | Role | Email | Password |
 |------|-------|----------|
@@ -410,71 +379,46 @@ Use these credentials for testing the application:
 | Service Provider | provider@jansewa.gov.in | Provider@123 |
 | Citizen | citizen@example.com | Citizen@123 |
 
-### Default Service Credentials
+### Service Credentials
 
 | Service | Username | Password |
 |---------|----------|----------|
-| RabbitMQ Management | guest | guest |
-| MinIO Console | minioadmin | minioadmin123 |
+| RabbitMQ | guest | guest |
+| MinIO | minioadmin | minioadmin123 |
 
 ---
 
 ## 📡 API Endpoints
 
-### Authentication Endpoints
-
+### Authentication
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/auth/register` | Register a new user |
-| POST | `/api/auth/login` | Login and get JWT token |
-| GET | `/api/auth/me` | Get current user profile |
-| POST | `/api/auth/refresh` | Refresh access token |
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/login` | Login and get JWT |
+| GET | `/api/auth/me` | Get current user |
 
-### Healthcare Service
-
+### Healthcare
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/healthcare/appointments` | Get all appointments |
-| POST | `/api/healthcare/appointments` | Book new appointment |
-| GET | `/api/healthcare/appointments/:id` | Get appointment by ID |
-| PUT | `/api/healthcare/appointments/:id` | Update appointment |
-| DELETE | `/api/healthcare/appointments/:id` | Cancel appointment |
-| GET | `/api/healthcare/doctors` | Get available doctors |
-| GET | `/api/healthcare/departments` | Get departments |
+| GET | `/api/healthcare/appointments` | Get appointments |
+| POST | `/api/healthcare/appointments` | Book appointment |
+| POST | `/api/healthcare/ai/predict` | AI disease prediction |
 
-### Agriculture Service
-
+### Agriculture
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/agriculture/schemes` | Get government schemes |
-| GET | `/api/agriculture/farmers` | Get farmer profiles |
+| GET | `/api/agriculture/schemes` | Get schemes |
 | POST | `/api/agriculture/farmers` | Register farmer |
-| GET | `/api/agriculture/advisories` | Get agricultural advisories |
-| POST | `/api/agriculture/advisories` | Request advisory |
 
-### Urban Service
-
+### Urban
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/urban/complaints` | Get all complaints |
-| POST | `/api/urban/complaints` | Submit new complaint |
-| GET | `/api/urban/complaints/:id` | Get complaint by ID |
-| PUT | `/api/urban/complaints/:id/status` | Update complaint status |
-| GET | `/api/urban/departments` | Get departments |
-
-### Monitoring Service
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/monitoring/health` | Get all services health |
-| GET | `/api/monitoring/metrics` | Get system metrics |
-| GET | `/api/monitoring/analytics` | Get usage analytics |
+| GET | `/api/urban/complaints` | Get complaints |
+| POST | `/api/urban/complaints` | Submit complaint |
 
 ---
 
 ## ⚠️ Error Handling
-
-The API uses standard HTTP status codes and returns consistent error responses:
 
 ### Error Response Format
 
@@ -483,74 +427,58 @@ The API uses standard HTTP status codes and returns consistent error responses:
   "success": false,
   "error": {
     "code": "ERROR_CODE",
-    "message": "Human-readable error message",
-    "details": {}
-  },
-  "timestamp": "2026-01-18T10:30:00Z"
+    "message": "Human-readable error message"
+  }
 }
 ```
 
-### Common Error Codes
+### HTTP Status Codes
 
-| Status Code | Error Code | Description |
-|-------------|------------|-------------|
-| 400 | BAD_REQUEST | Invalid request parameters |
-| 401 | UNAUTHORIZED | Missing or invalid authentication |
-| 403 | FORBIDDEN | Insufficient permissions |
-| 404 | NOT_FOUND | Resource not found |
-| 409 | CONFLICT | Resource already exists |
-| 422 | VALIDATION_ERROR | Input validation failed |
-| 429 | TOO_MANY_REQUESTS | Rate limit exceeded |
-| 500 | INTERNAL_ERROR | Server error |
-| 503 | SERVICE_UNAVAILABLE | Service temporarily unavailable |
+| Code | Description |
+|------|-------------|
+| 400 | Bad Request - Invalid parameters |
+| 401 | Unauthorized - Invalid/missing token |
+| 403 | Forbidden - Insufficient permissions |
+| 404 | Not Found - Resource doesn't exist |
+| 429 | Too Many Requests - Rate limit exceeded |
+| 500 | Internal Server Error |
 
-### Error Handling Best Practices
-
-1. **Input Validation**: All endpoints validate inputs using `express-validator`
-2. **Graceful Degradation**: Services continue operating even if dependencies fail
-3. **Circuit Breaker**: Prevents cascading failures when services are down
-4. **Retry Logic**: Exponential backoff for transient failures
-5. **Structured Logging**: All errors logged with Winston for debugging
+### Error Handling Features
+- ✅ Input validation with `express-validator`
+- ✅ Graceful degradation when services fail
+- ✅ Circuit breaker for fault tolerance
+- ✅ Structured logging with Winston
 
 ---
 
 ## 🔒 Security & Secrets
 
-### Secrets Management
+### ✅ Confirmation: No secrets are committed to this repository
 
-> ✅ **Confirmation: No secrets are committed to this repository**
-
-- All sensitive configuration is stored in `.env` files (gitignored)
+- All sensitive data stored in `.env` files (gitignored)
 - `.env.example` contains only placeholder values
-- JWT secrets, API keys, and database credentials are never hardcoded
+- Passwords are hashed with bcrypt
+- JWT tokens for stateless authentication
+- Rate limiting prevents abuse
 
-### Security Features Implemented
+### Security Features
 
 | Feature | Implementation |
 |---------|----------------|
-| Authentication | JWT with RS256/HS256 signing |
-| Password Hashing | bcrypt with salt rounds |
-| Input Validation | express-validator on all endpoints |
-| Rate Limiting | Redis-backed rate limiting |
-| CORS | Configurable origin whitelist |
-| Helmet | Security headers middleware |
-| Data Encryption | AES-256-GCM for sensitive data |
+| Authentication | JWT with HS256 signing |
+| Password Hashing | bcrypt (10 salt rounds) |
+| Input Validation | express-validator |
+| Rate Limiting | Redis-backed |
+| CORS | Configurable origins |
+| Headers | Helmet middleware |
 
-### Files Excluded from Version Control
-
-```gitignore
-# Environment files
+### Gitignored Files
+```
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
-*.env
-
-# Database data
+.env.*.local
 data/mongodb/
 data/redis/
-data/rabbitmq/
 ```
 
 ---
@@ -562,27 +490,19 @@ data/rabbitmq/
 | Member | Role |
 |--------|------|
 | Developer 1 | Infrastructure & API Gateway |
-| Developer 2 | Healthcare Service & Frontend Auth |
-| Developer 3 | Agriculture Service & AI Features |
+| Developer 2 | Healthcare Service & AI Integration |
+| Developer 3 | Agriculture Service |
 | Developer 4 | Urban Service & Monitoring |
-| Developer 5 | Frontend UI/UX & Integration |
+| Developer 5 | Frontend UI/UX |
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- Ingenious Hackathon 7.0 organizers
-- Open source community for the amazing tools and libraries
-- Government of India digital initiatives for inspiration
+MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
 <p align="center">
-  Made with ❤️ by Team Missing Semicolon for Ingenious Hackathon 7.0
+  Made with ❤️ by <b>Team Missing Semicolon</b> for Ingenious Hackathon 7.0
 </p>
