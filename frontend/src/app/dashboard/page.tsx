@@ -48,9 +48,7 @@ function DashboardContent() {
                         </div>
                         <h2 className="text-2xl font-bold text-emerald-600 mb-2">Agriculture</h2>
                         <p className="text-gray-600 mb-4">Farmer support, advisories, and market access.</p>
-                        <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-600 text-sm font-medium rounded-full">
-                            Available
-                        </span>
+                        
                     </Link>
 
                     {/* Healthcare - Coming Soon */}
@@ -63,9 +61,7 @@ function DashboardContent() {
                         </div>
                         <h2 className="text-2xl font-bold text-rose-600 mb-2">Healthcare</h2>
                         <p className="text-gray-600 mb-4">Book appointments and access medical services.</p>
-                        <span className="inline-block px-3 py-1 bg-amber-100 text-amber-600 text-sm font-medium rounded-full">
-                            Coming Soon
-                        </span>
+                        
                     </Link>
 
                     {/* Urban - Coming Soon */}
@@ -78,9 +74,7 @@ function DashboardContent() {
                         </div>
                         <h2 className="text-2xl font-bold text-blue-600 mb-2">Urban</h2>
                         <p className="text-gray-600 mb-4">Civic services and municipal facilities.</p>
-                        <span className="inline-block px-3 py-1 bg-amber-100 text-amber-600 text-sm font-medium rounded-full">
-                            Coming Soon
-                        </span>
+                        
                     </Link>
                 </div>
 
