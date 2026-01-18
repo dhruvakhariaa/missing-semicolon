@@ -7,15 +7,15 @@ import Footer from '@/components/landing/Footer'
 import ScrollToTop from '@/components/ScrollToTop'
 
 export default function LandingPage() {
-    return (
-        <main className="min-h-screen">
-            <ScrollToTop />
-            <Header />
-            <Hero />
-            <Services />
-            <Stats />
-            <Testimonials />
-            <Footer />
-        </main>
-    )
+  return (
+    <main className="min-h-screen">
+      <ScrollToTop />
+      <Header />
+      <Hero />
+      <Services />
+      <Stats />
+      <Testimonials />
+      <Footer />
+    </main>
+  )
 }

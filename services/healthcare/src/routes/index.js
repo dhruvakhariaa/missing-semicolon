@@ -19,5 +19,6 @@ router.use('/departments', departmentRoutes);
 router.use('/doctors', doctorRoutes);
 router.use('/patients', patientRoutes);
 router.use('/appointments', appointmentRoutes);
+router.use('/chat', require('../chatbot/routes'));
 
 module.exports = router;

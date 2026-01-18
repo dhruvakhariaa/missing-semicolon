@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Star, MapPin, Clock, Search, Filter, Stethoscope, X } from 'lucide-react';
 import type { Doctor, Department } from '@/types';
@@ -73,7 +72,11 @@ const DoctorsContent = () => {
         const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             doc.specialization.toLowerCase().includes(searchTerm.toLowerCase());
 
-        const matchesDept = !selectedDept || doc.department?._id === selectedDept;
+        // Match by department ID or department NAME (for AI Health Checker)
+        const matchesDept = !selectedDept ||
+            doc.department?._id === selectedDept ||
+            doc.department?.name?.toLowerCase() === selectedDept.toLowerCase() ||
+            doc.specialization?.toLowerCase().includes(selectedDept.toLowerCase());
 
         const matchesExperience = !experienceFilter ||
             (experienceFilter === '0-5' && doc.experience <= 5) ||
@@ -99,6 +102,32 @@ const DoctorsContent = () => {
 
     return (
         <div className="space-y-6">
+            {/* AI Health Checker Referral Banner */}
+            {deptFilter && (
+                <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-white/20 p-2 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p className="font-bold">AI Health Checker Recommendation</p>
+                            <p className="text-sm text-white/80">Showing doctors in <span className="font-semibold">{deptFilter}</span> based on your symptoms</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => {
+                            router.push('/doctors');
+                            setSelectedDept('');
+                        }}
+                        className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
+                    >
+                        Show All Doctors
+                    </button>
+                </div>
+            )}
+
             {/* Header */}
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold text-gov-blue-700">Find Doctors</h1>
@@ -106,7 +135,7 @@ const DoctorsContent = () => {
             </div>
 
             {/* Search and Filter */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gov-blue-100 sticky top-20 z-10">
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gov-blue-100 sticky top-20 z-5">
                 <div className="flex flex-col md:flex-row gap-4">
                     <div className="relative flex-grow">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -121,8 +150,8 @@ const DoctorsContent = () => {
                     <button
                         onClick={() => setShowFilters(!showFilters)}
                         className={`flex items-center gap-2 px-4 py-3 border rounded-lg transition-colors ${activeFiltersCount > 0
-                                ? 'border-gov-blue-500 bg-gov-blue-50 text-gov-blue-700'
-                                : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                            ? 'border-gov-blue-500 bg-gov-blue-50 text-gov-blue-700'
+                            : 'border-gray-200 text-gray-600 hover:bg-gray-50'
                             }`}
                     >
                         <Filter className="h-5 w-5" />
@@ -248,9 +277,9 @@ const DoctorsContent = () => {
             )}
 
             {/* Doctor List */}
-            <div className="grid gap-6">
+            <div className="grid gap-6 relative z-0">
                 {filteredDoctors.map((doc) => (
-                    <div key={doc._id} className="bg-white p-6 rounded-xl shadow-sm border border-gov-blue-100 hover:shadow-lg transition-shadow">
+                    <div key={doc._id} className="bg-white p-6 rounded-xl shadow-sm border border-gov-blue-100 hover:shadow-lg transition-shadow relative">
                         <div className="flex flex-col md:flex-row gap-6">
                             {/* Avatar */}
                             <div className="flex-shrink-0">
@@ -310,12 +339,16 @@ const DoctorsContent = () => {
                                         {doc.availability?.days?.slice(0, 3).join(', ') || 'Mon-Fri'}
                                     </span>
                                 </div>
-                                <Link
-                                    href={`/doctors/${doc._id}`}
-                                    className="w-full sm:w-auto bg-gov-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gov-blue-700 transition-colors text-center"
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        console.log('Book Appointment clicked for doctor:', doc._id);
+                                        router.push(`/doctors/${doc._id}`);
+                                    }}
+                                    className="w-full sm:w-auto bg-gov-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gov-blue-700 transition-colors text-center cursor-pointer relative z-20 pointer-events-auto"
                                 >
                                     Book Appointment
-                                </Link>
+                                </button>
                             </div>
                         </div>
                     </div>
