@@ -1,0 +1,18 @@
+/**
+ * Request Logger Middleware
+ */
+
+const logger = require('../utils/logger');
+
+const requestLogger = (req, res, next) => {
+    const start = Date.now();
+
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        logger.debug(`${req.method} ${req.path} - ${res.statusCode} [${duration}ms]`);
+    });
+
+    next();
+};
+
+module.exports = { requestLogger };

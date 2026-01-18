@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDP Security Test Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Auth Tabs */
+        .auth-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #30363d;
+        }
+
+        .auth-tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #8b949e;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .auth-tab-btn:hover {
+            color: #f0f6fc;
+        }
+
+        .auth-tab-btn.active {
+            color: #58a6ff;
+            border-bottom-color: #58a6ff;
+        }
+
+        .auth-form-container {
+            display: none;
+        }
+
+        .auth-form-container.active {
+            display: block;
+        }
+
+        /* Attack Buttons */
+        .attack-btn {
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            transition: all 0.2s ease;
+        }
+
+        .attack-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .attack-btn:active {
+            transform: translateY(0);
+        }
+
+        .attack-btn.running {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* Matrix Items */
+        .matrix-item.pass {
+            background: rgba(46, 160, 67, 0.2);
+            border-color: #2ea043;
+        }
+
+        .matrix-item.fail {
+            background: rgba(248, 81, 73, 0.2);
+            border-color: #f85149;
+        }
+    </style>
+</head>
+
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span class="shield-icon">🛡️</span>
+                <h1>SDP Security</h1>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-tab="dashboard">Dashboard</button>
+                <button class="nav-btn" data-tab="login">Login/Signup</button>
+                <button class="nav-btn" data-tab="attacks">Attack Suite</button>
+                <button class="nav-btn" data-tab="results">Test Results</button>
+            </nav>
+            <div class="status-panel">
+                <h3>System Status</h3>
+                <div class="status-item">
+                    <span class="label">API Gateway</span>
+                    <span class="status healthy">Online</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Rate Limiter</span>
+                    <span class="status active">Active</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">WAF</span>
+                    <span class="status active">Active</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-bar">
+                <h2>Security Testing Dashboard</h2>
+                <div class="actions">
+                    <button id="run-all-tests" class="primary-btn">Run Full Scan</button>
+                    <button id="clear-results" class="secondary-btn">Clear Logs</button>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <section id="dashboard-view" class="view active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Tests Passed</h3>
+                        <div class="number success" id="stats-passed">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Tests Failed</h3>
+                        <div class="number danger" id="stats-failed">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Attacks Blocked</h3>
+                        <div class="number warning" id="stats-blocked">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Security Score</h3>
+                        <div class="number info" id="stats-score">0%</div>
+                    </div>
+                </div>
+
+                <div class="security-matrix">
+                    <h3>Protection Matrix</h3>
+                    <div class="matrix-grid" id="protection-matrix">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Login/Signup View -->
+            <section id="login-view" class="view">
+                <div class="auth-container">
+                    <!-- Tab Buttons -->
+                    <div class="auth-tabs">
+                        <button type="button" class="auth-tab-btn active" id="login-tab-btn">Login</button>
+                        <button type="button" class="auth-tab-btn" id="signup-tab-btn">Signup</button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <div id="login-form-container" class="auth-form-container active">
+                        <form id="login-form" class="auth-form">
+                            <h3>🔐 Secure Login</h3>
+                            <p style="color: #8b949e; margin-bottom: 1rem; font-size: 0.875rem;">
+                                Login with your registered credentials
+                            </p>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="login-email" placeholder="user@example.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Password</label>
+                                <input type="password" id="login-password" placeholder="••••••••" required>
+                            </div>
+                            <button type="submit" class="auth-btn">Login</button>
+                        </form>
+                    </div>
+
+                    <!-- Signup Form -->
+                    <div id="signup-form-container" class="auth-form-container">
+                        <form id="signup-form" class="auth-form">
+                            <h3>📝 Create Account</h3>
+                            <p style="color: #8b949e; margin-bottom: 1rem; font-size: 0.875rem;">
+                                Create a new account (stored in MongoDB)
+                            </p>
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" id="signup-name" placeholder="John Doe" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="signup-email" placeholder="user@example.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Password</label>
+                                <input type="password" id="signup-password"
+                                    placeholder="Min 8 chars, 1 uppercase, 1 number, 1 symbol" required>
+                                <small style="color: #8b949e;">Must have: 8+ chars, uppercase, number, special
+                                    char</small>
+                            </div>
+                            <button type="submit" class="auth-btn">Sign Up</button>
+                        </form>
+                    </div>
+
+                    <div id="auth-message" class="message-box" style="display:none;"></div>
+                </div>
+            </section>
+
+            <!-- Attack Suite View -->
+            <section id="attacks-view" class="view">
+                <p style="color: #8b949e; margin-bottom: 1.5rem;">
+                    Click any attack button to test the security feature. Results will appear in Test Results.
+                </p>
+                <div class="attack-grid">
+                    <!-- Injection Attacks -->
+                    <div class="attack-category">
+                        <h3>💉 Injection Attacks</h3>
+                        <button type="button" class="attack-btn" data-attack="xss_script">XSS: Script Tag</button>
+                        <button type="button" class="attack-btn" data-attack="xss_event">XSS: Event Handler</button>
+                        <button type="button" class="attack-btn" data-attack="sql_injection">SQL Injection</button>
+                        <button type="button" class="attack-btn" data-attack="nosql_injection">NoSQL Injection</button>
+                        <button type="button" class="attack-btn" data-attack="cmd_injection">Command Injection</button>
+                    </div>
+
+                    <!-- Auth Attacks -->
+                    <div class="attack-category">
+                        <h3>🔓 Auth Attacks</h3>
+                        <button type="button" class="attack-btn" data-attack="brute_force">Brute Force (10 req)</button>
+                        <button type="button" class="attack-btn" data-attack="weak_password">Weak Password</button>
+                        <button type="button" class="attack-btn" data-attack="common_password">Common Password</button>
+                        <button type="button" class="attack-btn" data-attack="breached_password">Breached
+                            Password</button>
+                    </div>
+
+                    <!-- Token/Session Attacks -->
+                    <div class="attack-category">
+                        <h3>🎫 Token Attacks</h3>
+                        <button type="button" class="attack-btn" data-attack="token_tamper">Tampered Token</button>
+                        <button type="button" class="attack-btn" data-attack="token_none">None Algorithm</button>
+                        <button type="button" class="attack-btn" data-attack="token_expired">Expired Token</button>
+                        <button type="button" class="attack-btn" data-attack="csrf">CSRF Attempt</button>
+                    </div>
+
+                    <!-- DoS/Abuse -->
+                    <div class="attack-category">
+                        <h3>⚠️ DoS & Abuse</h3>
+                        <button type="button" class="attack-btn" data-attack="rate_limit">Rate Limit Flood</button>
+                        <button type="button" class="attack-btn" data-attack="mass_assignment">Mass Assignment</button>
+                        <button type="button" class="attack-btn" data-attack="idor">IDOR Attempt</button>
+                        <button type="button" class="attack-btn" data-attack="large_payload">Oversized Payload</button>
+                        <button type="button" class="attack-btn" data-attack="privilege_escalation">Privilege
+                            Escalation</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results View -->
+            <section id="results-view" class="view">
+                <div class="console-window">
+                    <div class="console-header">
+                        <span>Security Test Logs</span>
+                        <span class="live-indicator">LIVE</span>
+                    </div>
+                    <div id="test-logs" class="console-content">
+                        <!-- Logs injected here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- External Scripts ONLY - No inline scripts -->
+    <script src="js/attacks.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

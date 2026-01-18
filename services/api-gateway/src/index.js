@@ -14,6 +14,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
@@ -33,6 +34,8 @@ const authRoutes = require('./routes/auth');
 const proxyRoutes = require('./routes/proxy');
 const registryRoutes = require('./routes/registry');
 const healthRoutes = require('./routes/health');
+const kycRoutes = require('./routes/kyc');
+const securityRoutes = require('./routes/security');
 
 // Services
 const ServiceRegistry = require('./services/ServiceRegistry');
@@ -63,7 +66,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan('combined', { stream: { write: (msg) => logger.info(msg.trim()) } }));
 app.use(requestLogger);
 
-// Rate limiting
+// CRITICAL: Bulletproof Input Validation (OWASP Protection)
+// Apply STRICT validation BEFORE rate limiting
+const {
+  strictInputValidation,
+  blockNoSqlInjection,
+  limitPayloadSize
+} = require('./middleware/inputSanitizer');
+
+// Layer 1: Payload size limit (DoS protection)
+app.use(limitPayloadSize(100000));  // 100KB max
+
+// Layer 2: NoSQL injection blocking
+app.use(blockNoSqlInjection);
+
+// Layer 3: Strict pattern validation (XSS, SQLi, CMDi)
+app.use(strictInputValidation);
+
+// Layer 4: Rate limiting
 app.use(rateLimiter);
 
 // ===========================================
@@ -73,8 +93,39 @@ app.use(rateLimiter);
 // Health check endpoint (no auth required)
 app.use('/health', healthRoutes);
 
+// Serve Security Dashboard (with no-cache for development)
+app.use('/security-dashboard', (req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+}, express.static(path.join(__dirname, '../public')));
+
+app.get('/security-demo', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// KYC Portal - Aadhaar & PAN Verification UI
+app.get('/kyc-portal', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.sendFile(path.join(__dirname, '../public/kyc.html'));
+});
+
+// Live Security Monitor - Split-screen attack testing
+app.get('/live-monitor', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.sendFile(path.join(__dirname, '../public/live-monitor.html'));
+});
+
 // Authentication routes
 app.use('/api/auth', authRoutes);
+
+// Security routes (attack alerts)
+app.use('/api/security', securityRoutes);
+
+// KYC (Aadhaar & PAN) verification routes
+app.use('/api/kyc', kycRoutes);
 
 // Service registry management
 app.use('/api/registry', registryRoutes);
@@ -95,30 +146,51 @@ app.use(errorHandler);
 
 async function startServer() {
   try {
-    // Connect to MongoDB
-    await connectDB();
-    logger.info('Connected to MongoDB');
+    // Connect to MongoDB (optional - continues if unavailable)
+    const mongoConnection = await connectDB();
+    if (mongoConnection) {
+      logger.info('Connected to MongoDB');
+    } else {
+      logger.warn('MongoDB unavailable - running in limited mode');
+    }
 
-    // Connect to Redis
-    await connectRedis();
-    logger.info('Connected to Redis');
+    // Connect to Redis (optional - continues if unavailable)
+    const redisConnection = await connectRedis();
+    if (redisConnection) {
+      logger.info('Connected to Redis');
+    } else {
+      logger.warn('Redis unavailable - rate limiting may use in-memory store');
+    }
 
-    // Connect to RabbitMQ
-    await connectRabbitMQ();
-    logger.info('Connected to RabbitMQ');
+    // Connect to RabbitMQ (optional - continues if unavailable)
+    const rabbitConnection = await connectRabbitMQ();
+    if (rabbitConnection) {
+      logger.info('Connected to RabbitMQ');
+    } else {
+      logger.warn('RabbitMQ unavailable - event publishing disabled');
+    }
 
-    // Initialize service registry
-    await ServiceRegistry.initialize();
-    logger.info('Service Registry initialized');
+    // Initialize service registry (with error handling)
+    try {
+      await ServiceRegistry.initialize();
+      logger.info('Service Registry initialized');
+    } catch (err) {
+      logger.warn('Service Registry initialization failed - using defaults');
+    }
 
-    // Start health checker
-    HealthChecker.start();
-    logger.info('Health Checker started');
+    // Start health checker (with error handling)
+    try {
+      HealthChecker.start();
+      logger.info('Health Checker started');
+    } catch (err) {
+      logger.warn('Health Checker failed to start');
+    }
 
     // Start server
     app.listen(PORT, () => {
       logger.info(`API Gateway running on port ${PORT}`);
       logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      logger.info(`Security Dashboard: http://localhost:${PORT}/security-dashboard`);
     });
 
   } catch (error) {

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government KYC Portal - Secure Identity Verification</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header .emblem {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 32px;
+            border: 1px solid var(--border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            background: var(--border);
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: var(--primary-light);
+            color: white;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .step.completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-line {
+            width: 40px;
+            height: 2px;
+            background: var(--border);
+            align-self: center;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            margin-top: 12px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .tab-switch {
+            display: flex;
+            margin-bottom: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .tab-switch button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-switch button.active {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        .otp-inputs {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .otp-inputs input {
+            width: 50px;
+            height: 56px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+        }
+
+        .otp-inputs input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 0 20px rgba(16, 185, 129, 0);
+            }
+        }
+
+        .kyc-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, var(--accent) 0%, #d97706 100%);
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row .label {
+            color: var(--text-muted);
+        }
+
+        .info-row .value {
+            font-weight: 500;
+        }
+
+        .loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .btn.loading .loader {
+            display: inline-block;
+        }
+
+        .btn.loading .btn-text {
+            opacity: 0.7;
+        }
+
+        .masked-number {
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .security-badge::before {
+            content: "";
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="emblem">☸</div>
+            <h1>Government KYC Portal</h1>
+            <p>Secure Identity Verification System</p>
+        </div>
+
+        <div class="card">
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" id="step1">1</div>
+                <div class="step-line"></div>
+                <div class="step" id="step2">2</div>
+                <div class="step-line"></div>
+                <div class="step" id="step3">3</div>
+                <div class="step-line"></div>
+                <div class="step" id="step4">✓</div>
+            </div>
+
+            <!-- Alert Messages -->
+            <div class="alert alert-error" id="errorAlert"></div>
+            <div class="alert alert-success" id="successAlert"></div>
+
+            <!-- Step 1: Login/Signup -->
+            <div class="form-section active" id="section-auth">
+                <div class="tab-switch">
+                    <button class="active" id="tabLogin">Login</button>
+                    <button id="tabSignup">Sign Up</button>
+                </div>
+
+                <div id="loginForm">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="loginEmail" placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="Enter your password">
+                    </div>
+                    <button class="btn btn-primary" id="loginBtn">
+                        <span class="loader"></span>
+                        <span class="btn-text">Continue to KYC</span>
+                    </button>
+                </div>
+
+                <div id="signupForm" style="display: none;">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="signupName" placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="signupEmail" placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="signupPassword" placeholder="Min 8 chars, 1 uppercase, 1 number">
+                    </div>
+                    <button class="btn btn-primary" id="signupBtn">
+                        <span class="loader"></span>
+                        <span class="btn-text">Create Account</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 1.5: Email OTP Verification -->
+            <div class="form-section" id="section-email-otp">
+                <h2 style="text-align: center; margin-bottom: 8px;">Verify Your Email</h2>
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 24px; font-size: 14px;">
+                    Enter the 6-digit code sent to your email
+                </p>
+                <p style="text-align: center; margin-bottom: 16px;">
+                    <span class="masked-number" id="maskedEmail"></span>
+                </p>
+
+                <div class="otp-inputs" id="emailOtpInputs">
+                    <input type="text" maxlength="1" class="email-otp-input">
+                    <input type="text" maxlength="1" class="email-otp-input">
+                    <input type="text" maxlength="1" class="email-otp-input">
+                    <input type="text" maxlength="1" class="email-otp-input">
+                    <input type="text" maxlength="1" class="email-otp-input">
+                    <input type="text" maxlength="1" class="email-otp-input">
+                </div>
+
+                <button class="btn btn-primary" id="verifyEmailOtpBtn">
+                    <span class="loader"></span>
+                    <span class="btn-text">Verify & Continue</span>
+                </button>
+                <p id="resendTimer"
+                    style="text-align: center; color: var(--text-muted); font-size: 13px; margin: 12px 0;">
+                    Didn't receive the code? <span id="resendCountdown">Wait 60s</span>
+                </p>
+                <button class="btn btn-secondary" id="resendOtpBtn" style="display: none;">
+                    Resend Code <span id="resendsRemaining">(3 remaining)</span>
+                </button>
+                <button class="btn btn-secondary" id="backToLoginFromEmailOtp">
+                    ← Go Back to Login
+                </button>
+            </div>
+
+            <!-- Step 2: Aadhaar & PAN Input -->
+            <div class="form-section" id="section-identity">
+                <h2 style="text-align: center; margin-bottom: 8px;">Identity Verification</h2>
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 24px; font-size: 14px;">
+                    Enter your Aadhaar and PAN for government verification
+                </p>
+
+                <div class="form-group">
+                    <label>Aadhaar Number (12 digits)</label>
+                    <input type="text" id="aadhaarNumber" placeholder="XXXX XXXX XXXX" maxlength="14">
+                </div>
+                <div class="form-group">
+                    <label>PAN Number</label>
+                    <input type="text" id="panNumber" placeholder="ABCDE1234F" maxlength="10"
+                        style="text-transform: uppercase;">
+                </div>
+                <button class="btn btn-primary" id="initiateKycBtn">
+                    <span class="loader"></span>
+                    <span class="btn-text">Request OTP</span>
+                </button>
+                <button class="btn btn-secondary" id="backToLoginBtn">
+                    ← Go Back to Login
+                </button>
+            </div>
+
+            <!-- Step 3: OTP Verification -->
+            <div class="form-section" id="section-otp">
+                <h2 style="text-align: center; margin-bottom: 8px;">Verify OTP</h2>
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 24px; font-size: 14px;">
+                    Enter the OTP sent to your Aadhaar-linked mobile
+                </p>
+                <p style="text-align: center; margin-bottom: 16px;">
+                    <span class="masked-number" id="maskedMobile"></span>
+                </p>
+
+                <div class="otp-inputs">
+                    <input type="text" maxlength="1" class="otp-input">
+                    <input type="text" maxlength="1" class="otp-input">
+                    <input type="text" maxlength="1" class="otp-input">
+                    <input type="text" maxlength="1" class="otp-input">
+                    <input type="text" maxlength="1" class="otp-input">
+                    <input type="text" maxlength="1" class="otp-input">
+                </div>
+
+                <button class="btn btn-primary" id="verifyKycBtn">
+                    <span class="loader"></span>
+                    <span class="btn-text">Verify Identity</span>
+                </button>
+                <button class="btn btn-secondary" id="backToIdentityBtn">
+                    ← Go Back to Edit Details
+                </button>
+            </div>
+
+            <!-- Step 4: Success -->
+            <div class="form-section" id="section-success">
+                <div class="success-icon">✓</div>
+                <h2 style="text-align: center; margin-bottom: 8px;">Verification Complete!</h2>
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 24px; font-size: 14px;">
+                    Your identity has been successfully verified
+                </p>
+
+                <div style="text-align: center;">
+                    <span class="kyc-badge" id="kycBadge">KYC Level 2 ✓</span>
+                </div>
+
+                <div style="margin-top: 24px;">
+                    <div class="info-row">
+                        <span class="label">Email Status</span>
+                        <span class="value" style="color: var(--success);">✓ Verified</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">2FA Status</span>
+                        <span class="value" style="color: var(--success);">✓ Enabled</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Aadhaar Status</span>
+                        <span class="value" style="color: var(--success);">✓ Verified</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">PAN Status</span>
+                        <span class="value" style="color: var(--success);">✓ Verified</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Name Match</span>
+                        <span class="value" id="nameSimilarity">95%</span>
+                    </div>
+                </div>
+
+                <p style="text-align: center; color: var(--success); margin-top: 24px; font-weight: 600;">
+                    Registration Complete. You may now access government services.
+                </p>
+            </div>
+
+            <div class="security-badge">
+                AES-256-GCM Encrypted | Government of India
+            </div>
+        </div>
+    </div>
+
+    <script src="/security-dashboard/js/kyc.js"></script>
+</body>
+
+</html>

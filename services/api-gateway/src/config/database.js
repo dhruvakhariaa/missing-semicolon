@@ -18,7 +18,8 @@ const connectDB = async () => {
         return conn;
     } catch (error) {
         logger.error(`MongoDB Connection Error: ${error.message}`);
-        throw error;
+        logger.warn('Continuing without MongoDB - some features may be unavailable');
+        return null;
     }
 };
 
