@@ -431,6 +431,14 @@ const sanitizeInputs = (options = {}) => (req, res, next) => {
 
     const sanitizeObject = (obj) => {
         if (!obj || typeof obj !== 'object') return obj;
+
+        // Preserve arrays!
+        if (Array.isArray(obj)) {
+            return obj.map(item =>
+                typeof item === 'object' ? sanitizeObject(item) : sanitizeValue(item)
+            );
+        }
+
         const result = {};
         for (const [key, value] of Object.entries(obj)) {
             if (key.startsWith('$')) continue;  // Skip MongoDB operators

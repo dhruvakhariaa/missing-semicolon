@@ -107,6 +107,18 @@ const UserSchema = new mongoose.Schema({
     lastOtpResend: { type: Date, select: false },
     otpResendCount: { type: Number, default: 0, select: false },
 
+    // Face Authentication (3FA)
+    faceAuth: {
+        enabled: { type: Boolean, default: false },
+        faceEmbedding: { type: String, default: null, select: false },  // AES-256-GCM encrypted
+        embeddingDimension: { type: Number, default: null },
+        numSamplesUsed: { type: Number, default: 0 },
+        averageQuality: { type: Number, default: null },
+        lastFaceUpdate: { type: Date, default: null },
+        faceAuthAttempts: { type: Number, default: 0 },
+        faceAuthLockUntil: { type: Date, default: null }
+    },
+
     // Timestamps
     lastLogin: Date,
     passwordChangedAt: Date
@@ -166,6 +178,47 @@ UserSchema.methods.addRefreshToken = function (token, expiresAt, device, ip) {
 UserSchema.methods.removeRefreshToken = function (token) {
     this.refreshTokens = this.refreshTokens.filter(t => t.token !== token);
 };
+
+// Face Authentication Methods
+UserSchema.methods.setFaceEmbedding = function (embeddingJson) {
+    this.faceAuth.faceEmbedding = encryptField(embeddingJson);
+};
+
+UserSchema.methods.getFaceEmbedding = function () {
+    if (!this.faceAuth?.faceEmbedding) return null;
+    return decryptField(this.faceAuth.faceEmbedding);
+};
+
+UserSchema.methods.incFaceAuthAttempts = async function () {
+    const lockoutMinutes = parseInt(process.env.FACE_LOCKOUT_MINUTES) || 15;
+    const maxAttempts = parseInt(process.env.FACE_MAX_ATTEMPTS) || 5;
+
+    // Check if previous lock has expired
+    if (this.faceAuth.faceAuthLockUntil && this.faceAuth.faceAuthLockUntil < Date.now()) {
+        return this.updateOne({
+            $set: { 'faceAuth.faceAuthAttempts': 1 },
+            $unset: { 'faceAuth.faceAuthLockUntil': 1 }
+        });
+    }
+
+    const updates = { $inc: { 'faceAuth.faceAuthAttempts': 1 } };
+    if ((this.faceAuth.faceAuthAttempts || 0) + 1 >= maxAttempts) {
+        updates.$set = { 'faceAuth.faceAuthLockUntil': new Date(Date.now() + lockoutMinutes * 60 * 1000) };
+    }
+    return this.updateOne(updates);
+};
+
+UserSchema.methods.resetFaceAuthAttempts = function () {
+    return this.updateOne({
+        $set: { 'faceAuth.faceAuthAttempts': 0 },
+        $unset: { 'faceAuth.faceAuthLockUntil': 1 }
+    });
+};
+
+// Virtual: Is Face Auth Locked?
+UserSchema.virtual('isFaceAuthLocked').get(function () {
+    return !!(this.faceAuth?.faceAuthLockUntil && this.faceAuth.faceAuthLockUntil > Date.now());
+});
 
 // Statics
 UserSchema.statics.findByEmail = function (email) {

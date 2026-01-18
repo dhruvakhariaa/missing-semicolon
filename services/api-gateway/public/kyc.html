@@ -521,6 +521,69 @@
                 </button>
             </div>
 
+            <!-- Step: Face Verification (for Login 3FA) -->
+            <div class="form-section" id="section-face-verify">
+                <h2 style="text-align: center; margin-bottom: 8px;">👤 Face Verification</h2>
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 24px; font-size: 14px;">
+                    Look at the camera to verify your identity
+                </p>
+
+                <div class="webcam-container" style="position: relative; margin-bottom: 24px;">
+                    <video id="faceVerifyVideo" autoplay playsinline muted
+                        style="width: 100%; border-radius: 12px; background: #000; transform: scaleX(-1);"></video>
+                    <canvas id="faceVerifyCanvas" style="display: none;"></canvas>
+                    <div id="faceVerifyOverlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                        text-align: center; color: white; display: none;">
+                        <div class="loader"
+                            style="display: inline-block; width: 40px; height: 40px; border-width: 4px;"></div>
+                        <p style="margin-top: 12px;" id="faceVerifyStatus">Verifying...</p>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="startFaceVerifyBtn">
+                    <span class="loader"></span>
+                    <span class="btn-text">📷 Start Camera & Verify</span>
+                </button>
+                <button class="btn btn-secondary" id="retryFaceVerifyBtn" style="display: none;">
+                    🔄 Try Again
+                </button>
+                <button class="btn btn-secondary" id="skipFaceVerifyBtn" style="margin-top: 8px;">
+                    Skip Face Verification
+                </button>
+            </div>
+
+            <!-- Step: Face Registration (after Signup) -->
+            <div class="form-section" id="section-face-register">
+                <h2 style="text-align: center; margin-bottom: 8px;">📸 Register Your Face</h2>
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 24px; font-size: 14px;">
+                    Enable 3-Factor Authentication by registering your face
+                </p>
+
+                <div class="webcam-container" style="position: relative; margin-bottom: 24px;">
+                    <video id="faceRegisterVideo" autoplay playsinline muted
+                        style="width: 100%; border-radius: 12px; background: #000; transform: scaleX(-1);"></video>
+                    <canvas id="faceRegisterCanvas" style="display: none;"></canvas>
+                    <div id="faceRegisterOverlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                        text-align: center; color: white; display: none;">
+                        <div class="loader"
+                            style="display: inline-block; width: 40px; height: 40px; border-width: 4px;"></div>
+                        <p style="margin-top: 12px;" id="faceRegisterStatus">Capturing...</p>
+                    </div>
+                    <div id="captureProgress" style="position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+                        background: rgba(0,0,0,0.7); padding: 8px 16px; border-radius: 20px; display: none;">
+                        <span id="captureCount">0</span>/5 samples captured
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="startFaceRegisterBtn">
+                    <span class="loader"></span>
+                    <span class="btn-text">📷 Start Camera & Register Face</span>
+                </button>
+                <button class="btn btn-secondary" id="skipFaceRegisterBtn" style="margin-top: 8px;">
+                    Skip for Now (Register Later)
+                </button>
+            </div>
+
             <!-- Step 4: Success -->
             <div class="form-section" id="section-success">
                 <div class="success-icon">✓</div>
@@ -567,7 +630,22 @@
         </div>
     </div>
 
-    <script src="/security-dashboard/js/kyc.js"></script>
+    <script src="/js/kyc.js?v=4"></script>
+    <script src="/js/faceRegister.js?v=1"></script>
+    <script>
+        // Pre-fill test credentials for demo
+        document.addEventListener('DOMContentLoaded', function () {
+            // Switch to signup tab
+            document.getElementById('tabSignup').click();
+
+            // Pre-fill fields
+            setTimeout(function () {
+                document.getElementById('signupName').value = 'test';
+                document.getElementById('signupEmail').value = 'varun.patel@petpooja.com';
+                document.getElementById('signupPassword').value = 'Varun@123';
+            }, 100);
+        });
+    </script>
 </body>
 
 </html>

@@ -2,7 +2,8 @@
  * KYC Portal JavaScript
  * Government Identity Verification Flow
  * 
- * Flow: Login → Email OTP → KYC (Aadhaar/PAN) → Aadhaar OTP → Success
+ * Flow: Login → Email OTP → Face Verify (3FA) → KYC (Aadhaar/PAN) → Aadhaar OTP → Success
+ * Signup: Register → Face Register (optional) → Login
  */
 
 const API_BASE = '/api';
@@ -11,6 +12,12 @@ let kycRequestId = null;
 let storedAadhaar = null;
 let storedPan = null;
 let storedEmail = null;  // For email OTP verification
+
+// Face Auth State
+let faceVerifyToken = null;
+let faceVerifyUserId = null;
+let pendingFaceAuth = false;
+let faceVideoStream = null;
 
 // Tab switching
 function switchTab(tab) {
@@ -78,8 +85,8 @@ function hideAlerts() {
     document.getElementById('successAlert').classList.remove('show');
 }
 
-// Section names for 5-step flow
-const SECTIONS = ['section-auth', 'section-email-otp', 'section-identity', 'section-otp', 'section-success'];
+// Section names for extended face auth flow
+const SECTIONS = ['section-auth', 'section-email-otp', 'section-face-verify', 'section-face-register', 'section-identity', 'section-otp', 'section-success'];
 const STEP_IDS = ['step1', 'step2', 'step3', 'step4'];
 
 // Navigate to section (handles all navigation)
@@ -214,9 +221,20 @@ async function verifyEmailOtp() {
         const data = await res.json();
 
         if (data.success) {
-            accessToken = data.data.accessToken;
-            showSuccess('Email verified! Proceeding to KYC...');
-            setTimeout(() => goToSection(2), 500);  // Go to identity section
+            // Check if face auth is required (3FA)
+            if (data.data.pendingFaceAuth) {
+                // Store face verification token for 3FA
+                faceVerifyToken = data.data.faceVerifyToken;
+                faceVerifyUserId = data.data.userId;
+                pendingFaceAuth = true;
+                showSuccess('Email verified! Face verification required...');
+                setTimeout(() => goToSection(2), 500);  // Go to face verify section
+            } else {
+                // No face auth - proceed directly to KYC
+                accessToken = data.data.accessToken;
+                showSuccess('Email verified! Proceeding to KYC...');
+                setTimeout(() => goToSection(4), 500);  // Go to identity section (index 4)
+            }
         } else {
             showError(data.error?.message || 'Invalid verification code');
         }
@@ -324,15 +342,12 @@ async function handleSignup() {
         const data = await res.json();
 
         if (data.success) {
-            // After signup, user needs to login with OTP
-            showSuccess('Account created! Please login to continue.');
-            // Switch to login tab
-            document.getElementById('signupForm').style.display = 'none';
-            document.getElementById('loginForm').style.display = 'block';
-            document.querySelectorAll('.tab-switch button')[0].classList.add('active');
-            document.querySelectorAll('.tab-switch button')[1].classList.remove('active');
-            // Pre-fill email
-            document.getElementById('loginEmail').value = email;
+            // Store token for face registration
+            accessToken = data.data.accessToken;
+            storedEmail = email;
+            showSuccess('Account created! Register your face for 3FA security.');
+            // Navigate to face registration section
+            setTimeout(() => goToSection(3), 500);  // Go to face register section (index 3)
         } else {
             showError(data.error?.message || 'Registration failed');
         }
@@ -493,6 +508,275 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.getElementById('backToIdentityBtn').addEventListener('click', function () {
-        goToPreviousSection(2);  // Go back to identity input
+        goToPreviousSection(4);  // Go back to identity input (now index 4)
     });
+
+    // Face Auth Event Listeners
+    // NOTE: Face registration is handled by inline script in kyc.html for reliability
+    document.getElementById('startFaceVerifyBtn')?.addEventListener('click', startFaceVerification);
+    document.getElementById('retryFaceVerifyBtn')?.addEventListener('click', retryFaceVerification);
+    document.getElementById('skipFaceVerifyBtn')?.addEventListener('click', skipFaceVerification);
+    // startFaceRegisterBtn is handled by inline script in kyc.html
+    document.getElementById('skipFaceRegisterBtn')?.addEventListener('click', skipFaceRegistration);
 });
+
+// ============================================================
+// Face Authentication Functions
+// ============================================================
+
+// Stop any running video stream
+function stopVideoStream() {
+    if (faceVideoStream) {
+        faceVideoStream.getTracks().forEach(track => track.stop());
+        faceVideoStream = null;
+    }
+}
+
+// Start face verification process
+async function startFaceVerification() {
+    const btn = document.getElementById('startFaceVerifyBtn');
+    const video = document.getElementById('faceVerifyVideo');
+    const canvas = document.getElementById('faceVerifyCanvas');
+    const overlay = document.getElementById('faceVerifyOverlay');
+    const statusEl = document.getElementById('faceVerifyStatus');
+
+    setLoading(btn, true);
+    hideAlerts();
+
+    try {
+        // Start camera
+        faceVideoStream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 640, height: 480, facingMode: 'user' }
+        });
+        video.srcObject = faceVideoStream;
+        await video.play();
+
+        // Set canvas dimensions
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+
+        // Wait for user to position face
+        statusEl.textContent = 'Position your face...';
+        overlay.style.display = 'block';
+        await sleep(2000);
+
+        // Capture frame
+        statusEl.textContent = 'Capturing...';
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const image = canvas.toDataURL('image/jpeg', 0.9);
+
+        // Verify with API
+        statusEl.textContent = 'Verifying face...';
+        const verifyRes = await fetch(`${API_BASE}/face/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                image,
+                userId: faceVerifyUserId,
+                faceVerifyToken
+            })
+        });
+
+        const verifyData = await verifyRes.json();
+
+        if (verifyData.success && verifyData.data?.verified) {
+            // Face verified - complete login
+            statusEl.textContent = 'Face verified! Completing login...';
+
+            const completeRes = await fetch(`${API_BASE}/auth/complete-face-auth`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: faceVerifyUserId,
+                    faceVerifyToken
+                })
+            });
+
+            const completeData = await completeRes.json();
+
+            if (completeData.success) {
+                accessToken = completeData.data.accessToken;
+                stopVideoStream();
+                showSuccess('3FA Login successful! Proceeding to KYC...');
+                setTimeout(() => goToSection(4), 500);  // Go to identity section
+            } else {
+                throw new Error(completeData.error?.message || 'Login failed');
+            }
+        } else {
+            throw new Error(verifyData.error?.message || 'Face verification failed');
+        }
+    } catch (err) {
+        stopVideoStream();
+        overlay.style.display = 'none';
+        showError(err.message || 'Face verification failed. Please try again.');
+        document.getElementById('retryFaceVerifyBtn').style.display = 'block';
+    }
+
+    setLoading(btn, false);
+}
+
+// Retry face verification
+function retryFaceVerification() {
+    document.getElementById('retryFaceVerifyBtn').style.display = 'none';
+    document.getElementById('faceVerifyOverlay').style.display = 'none';
+    startFaceVerification();
+}
+
+// Skip face verification (proceed without face auth for this login)
+function skipFaceVerification() {
+    stopVideoStream();
+    // This will only work if the backend allows skipping (which it doesn't normally)
+    // For demo purposes, show an error explaining face auth is required
+    showError('Face verification is required for accounts with 3FA enabled. Please complete face verification.');
+}
+
+// Start face registration after signup
+async function startFaceRegistration() {
+    const btn = document.getElementById('startFaceRegisterBtn');
+    const video = document.getElementById('faceRegisterVideo');
+    const canvas = document.getElementById('faceRegisterCanvas');
+    const overlay = document.getElementById('faceRegisterOverlay');
+    const statusEl = document.getElementById('faceRegisterStatus');
+    const progressEl = document.getElementById('captureProgress');
+    const countEl = document.getElementById('captureCount');
+
+    // Check if we have an access token
+    if (!accessToken) {
+        showError('Session expired. Please sign up again.');
+        setTimeout(() => goToSection(0), 1000);
+        return;
+    }
+
+    setLoading(btn, true);
+    hideAlerts();
+    overlay.style.display = 'block';
+    progressEl.style.display = 'block';
+
+    try {
+        // Use FaceRegistration module if available, otherwise fallback
+        if (window.FaceRegistration) {
+            await window.FaceRegistration.init(video, canvas);
+
+            statusEl.textContent = 'Starting camera...';
+            await window.FaceRegistration.startCamera();
+
+            statusEl.textContent = 'Camera ready! Get ready to capture 5 positions...';
+            await sleep(2000);
+
+            // Capture all 5 positions with guided instructions
+            const images = await window.FaceRegistration.captureAllPositions(
+                (msg) => { statusEl.textContent = msg; },
+                (count) => { countEl.textContent = count; }
+            );
+
+            console.log('All images captured:', images.length);
+
+            // Stop camera
+            window.FaceRegistration.stopCamera();
+
+            // Send to API
+            statusEl.textContent = 'Processing face data...';
+
+            const res = await fetch(`${API_BASE}/face/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({ images })
+            });
+
+            const data = await res.json();
+            console.log('Face registration response:', data);
+
+            if (data.success) {
+                showSuccess('🎉 Face registered! 3FA is now enabled. Please login.');
+                if (storedEmail) {
+                    document.getElementById('loginEmail').value = storedEmail;
+                }
+                setTimeout(() => {
+                    goToSection(0);
+                    switchTab('login');
+                }, 2000);
+            } else {
+                throw new Error(data.error?.message || 'Face registration failed');
+            }
+        } else {
+            // Fallback: simple capture without module
+            statusEl.textContent = 'Starting camera...';
+
+            faceVideoStream = await navigator.mediaDevices.getUserMedia({
+                video: { width: 640, height: 480, facingMode: 'user' }
+            });
+            video.srcObject = faceVideoStream;
+
+            await new Promise((resolve, reject) => {
+                video.onloadedmetadata = () => video.play().then(resolve).catch(reject);
+                setTimeout(() => reject(new Error('Timeout')), 10000);
+            });
+
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+
+            const images = [];
+            const ctx = canvas.getContext('2d');
+            const positions = ['Front 😐', 'Left 👈', 'Right 👉', 'Up 👆', 'Down 👇'];
+
+            for (let i = 0; i < 5; i++) {
+                statusEl.textContent = `Position ${i + 1}: ${positions[i]} - Hold for 3 seconds...`;
+                countEl.textContent = i;
+                await sleep(3000);
+
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const img = canvas.toDataURL('image/jpeg', 0.8);
+                images.push(img);
+                countEl.textContent = i + 1;
+            }
+
+            stopVideoStream();
+
+            statusEl.textContent = 'Processing...';
+            const res = await fetch(`${API_BASE}/face/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({ images })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                showSuccess('Face registered! 3FA enabled.');
+                setTimeout(() => { goToSection(0); switchTab('login'); }, 1500);
+            } else {
+                throw new Error(data.error?.message || 'Registration failed');
+            }
+        }
+    } catch (err) {
+        console.error('Face registration error:', err);
+        if (window.FaceRegistration) window.FaceRegistration.stopCamera();
+        stopVideoStream();
+        overlay.style.display = 'none';
+        progressEl.style.display = 'none';
+        showError(err.message || 'Face registration failed. Please try again.');
+    }
+
+    setLoading(btn, false);
+}
+
+// Skip face registration - continue to login
+function skipFaceRegistration() {
+    stopVideoStream();
+    showSuccess('Face registration skipped. You can register later.');
+    setTimeout(() => {
+        goToSection(0);  // Go back to login
+        switchTab('login');
+    }, 1000);
+}
+
+// Utility: Sleep
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}

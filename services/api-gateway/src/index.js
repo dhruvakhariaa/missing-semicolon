@@ -36,6 +36,7 @@ const registryRoutes = require('./routes/registry');
 const healthRoutes = require('./routes/health');
 const kycRoutes = require('./routes/kyc');
 const securityRoutes = require('./routes/security');
+const faceRoutes = require('./routes/face');
 
 // Services
 const ServiceRegistry = require('./services/ServiceRegistry');
@@ -75,13 +76,26 @@ const {
 } = require('./middleware/inputSanitizer');
 
 // Layer 1: Payload size limit (DoS protection)
-app.use(limitPayloadSize(100000));  // 100KB max
+// Skip for face auth routes which need larger payloads for images
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/face')) {
+    return next();  // Skip limit for face routes
+  }
+  limitPayloadSize(100000)(req, res, next);  // 100KB max for other routes
+});
 
 // Layer 2: NoSQL injection blocking
 app.use(blockNoSqlInjection);
 
 // Layer 3: Strict pattern validation (XSS, SQLi, CMDi)
-app.use(strictInputValidation);
+// Layer 3: Strict pattern validation (XSS, SQLi, CMDi)
+// Skip for face auth as base64 images might trigger false positives or be corrupted by checking
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/face')) {
+    return next();
+  }
+  strictInputValidation(req, res, next);
+});
 
 // Layer 4: Rate limiting
 app.use(rateLimiter);
@@ -89,6 +103,9 @@ app.use(rateLimiter);
 // ===========================================
 // Routes
 // ===========================================
+
+// Serve static files from public directory (CSS, JS, images)
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Health check endpoint (no auth required)
 app.use('/health', healthRoutes);
@@ -129,6 +146,9 @@ app.use('/api/kyc', kycRoutes);
 
 // Service registry management
 app.use('/api/registry', registryRoutes);
+
+// Face authentication routes (3FA)
+app.use('/api/face', faceRoutes);
 
 // Proxy all service requests
 app.use('/api', proxyRoutes);

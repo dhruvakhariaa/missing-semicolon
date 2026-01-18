@@ -261,7 +261,7 @@ exports.verifyLoginOtp = async (req, res) => {
             });
         }
 
-        // OTP is valid - clear it and generate tokens
+        // OTP is valid - clear it and prepare for next step
         user.loginOtp = undefined;
         user.loginOtpExpires = undefined;
         user.loginOtpAttempts = 0;
@@ -281,7 +281,34 @@ exports.verifyLoginOtp = async (req, res) => {
             // This would need to be done in the login step
         }
 
-        // Generate tokens
+        // Check if face authentication is enabled for this user (3FA)
+        if (user.faceAuth?.enabled) {
+            // Generate temporary face verification token (short-lived)
+            const jwt = require('jsonwebtoken');
+            const faceVerifyToken = jwt.sign(
+                { userId: user._id.toString(), type: 'face_verify', email: email },
+                process.env.JWT_ACCESS_SECRET,
+                { expiresIn: '5m' }  // 5 minutes to complete face verification
+            );
+
+            await user.save();
+
+            logger.info(`OTP verified for user: ${email}, pending face auth`);
+
+            return res.json({
+                success: true,
+                message: 'OTP verified. Face verification required.',
+                data: {
+                    pendingFaceAuth: true,
+                    faceVerifyToken,
+                    userId: user._id.toString(),
+                    email: email.replace(/(.{2})(.*)(@.*)/, '$1***$3'),
+                    expiresIn: 300  // 5 minutes
+                }
+            });
+        }
+
+        // No face auth - generate tokens directly
         const accessToken = generateAccessToken(user);
         const { token: refreshToken, expiresAt } = generateRefreshToken(user);
 
@@ -594,6 +621,86 @@ exports.getUserProfile = async (req, res) => {
         res.status(500).json({
             success: false,
             error: { code: 'FETCH_FAILED', message: 'Failed to fetch user profile' }
+        });
+    }
+};
+
+/**
+ * POST /api/auth/complete-face-auth
+ * Complete login after face verification (3FA)
+ * Called after face verification is successful
+ */
+exports.completeFaceAuth = async (req, res) => {
+    try {
+        const { faceVerifyToken, userId } = req.body;
+
+        if (!faceVerifyToken || !userId) {
+            return res.status(400).json({
+                success: false,
+                error: { code: 'MISSING_FIELDS', message: 'Face verify token and user ID required' }
+            });
+        }
+
+        // Verify the face verification token
+        const jwt = require('jsonwebtoken');
+        let payload;
+        try {
+            payload = jwt.verify(faceVerifyToken, process.env.JWT_ACCESS_SECRET);
+            if (payload.userId !== userId || payload.type !== 'face_verify') {
+                return res.status(401).json({
+                    success: false,
+                    error: { code: 'INVALID_TOKEN', message: 'Invalid face verification token' }
+                });
+            }
+        } catch (tokenError) {
+            return res.status(401).json({
+                success: false,
+                error: { code: 'TOKEN_EXPIRED', message: 'Face verification token expired. Please login again.' }
+            });
+        }
+
+        // Find user
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                error: { code: 'USER_NOT_FOUND', message: 'User not found' }
+            });
+        }
+
+        // Generate tokens  
+        const accessToken = generateAccessToken(user);
+        const { token: refreshToken, expiresAt } = generateRefreshToken(user);
+
+        // Store refresh token
+        user.addRefreshToken(refreshToken, expiresAt, req.headers['user-agent'], req.ip);
+        await user.save();
+
+        // Set refresh token as HttpOnly cookie
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+        logger.info(`User completed 3FA login: ${user.email}`);
+
+        res.json({
+            success: true,
+            message: 'Login successful (3FA complete)',
+            data: {
+                user: user.toJSON(),
+                accessToken,
+                tokenType: 'Bearer',
+                expiresIn: 900
+            }
+        });
+    } catch (error) {
+        logger.error('Complete face auth error:', error);
+        res.status(500).json({
+            success: false,
+            error: { code: 'AUTH_FAILED', message: 'Face authentication completion failed' }
         });
     }
 };

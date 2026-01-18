@@ -163,4 +163,21 @@ router.get('/users/:id',
     authController.getUserProfile
 );
 
+// POST /api/auth/complete-face-auth - Step 3: Complete login after face verification (3FA)
+const completeFaceAuthValidation = [
+    body('faceVerifyToken')
+        .isString().withMessage('Face verify token required')
+        .isLength({ max: 2000 }).withMessage('Token too long'),
+    body('userId')
+        .isString().withMessage('User ID required')
+        .isLength({ min: 24, max: 24 }).withMessage('Invalid user ID format')
+];
+
+router.post('/complete-face-auth',
+    validateAuthInput,
+    completeFaceAuthValidation,
+    handleValidationErrors,
+    authController.completeFaceAuth
+);
+
 module.exports = router;
